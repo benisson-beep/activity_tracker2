@@ -65,6 +65,8 @@ export interface Goal {
   createdAt: string;
 }
 
+export type CalendarNumberFontStyle = 'geometric' | 'sans' | 'rounded' | 'mono';
+
 export interface UserPreferences {
   is24Hour: boolean;
   startWeekOnMonday: boolean;
@@ -73,6 +75,7 @@ export interface UserPreferences {
   enableDesktopNotification?: boolean;
   enableSoundNotification?: boolean;
   theme: 'dark' | 'light' | 'system';
+  calendarNumberFont?: CalendarNumberFontStyle;
 }
 
 export type TimerMode = 'stopwatch' | 'countdown';

@@ -9,10 +9,12 @@ import {
   X,
   Edit2,
   Trash2,
-  ArrowRight
+  ArrowRight,
+  Type,
+  Check
 } from 'lucide-react';
 import { useActivity } from '../../context/ActivityContext';
-import { Activity, Category } from '../../types';
+import { Activity, Category, CalendarNumberFontStyle } from '../../types';
 import { 
   toDateString, 
   parseDateString, 
@@ -28,6 +30,13 @@ import { CategoryIcon } from '../common/CategoryIcon';
 
 type CalendarMode = 'month' | 'week' | 'day';
 
+const FONT_OPTIONS: { id: CalendarNumberFontStyle; label: string; preview: string; description: string }[] = [
+  { id: 'geometric', label: 'Geometric', preview: '01 24', description: 'Outfit — Modern, circular & clean' },
+  { id: 'sans', label: 'Clean Sans', preview: '01 24', description: 'Inter — Balanced, modern SaaS proportional' },
+  { id: 'rounded', label: 'Rounded', preview: '01 24', description: 'Plus Jakarta — Soft friendly curved numerals' },
+  { id: 'mono', label: 'Mono Tech', preview: '01 24', description: 'JetBrains — Fixed-width developer terminal' },
+];
+
 export const CalendarView: React.FC = () => {
   const { 
     activities, 
@@ -35,12 +44,30 @@ export const CalendarView: React.FC = () => {
     openCreateActivityModal, 
     openEditActivityModal, 
     deleteActivity,
-    preferences 
+    preferences,
+    updatePreferences
   } = useActivity();
 
   const [mode, setMode] = useState<CalendarMode>('month');
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedDayActivities, setSelectedDayActivities] = useState<{ date: string; acts: Activity[] } | null>(null);
+  const [showFontMenu, setShowFontMenu] = useState(false);
+
+  const currentFont: CalendarNumberFontStyle = preferences.calendarNumberFont || 'geometric';
+
+  const numberFontClass = useMemo(() => {
+    switch (currentFont) {
+      case 'sans':
+        return 'font-sans tabular-nums tracking-tight';
+      case 'rounded':
+        return 'font-rounded tabular-nums tracking-tight';
+      case 'mono':
+        return 'font-mono tabular-nums';
+      case 'geometric':
+      default:
+        return 'font-geometric tabular-nums tracking-tight';
+    }
+  }, [currentFont]);
 
   // Month navigation
   const handlePrev = () => {
@@ -111,7 +138,7 @@ export const CalendarView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Mode Switcher */}
           <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
             {(['month', 'week', 'day'] as CalendarMode[]).map(m => (
@@ -153,6 +180,68 @@ export const CalendarView: React.FC = () => {
             </button>
           </div>
 
+          {/* Number Font Style Selector */}
+          <div className="relative">
+            <button
+              onClick={() => setShowFontMenu(!showFontMenu)}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 text-xs font-semibold border border-slate-200 dark:border-slate-700 flex items-center space-x-1.5 transition-colors"
+              title="Change calendar numbers font style"
+            >
+              <Type size={13} className="text-emerald-600 dark:text-emerald-400" />
+              <span className="hidden md:inline text-slate-400 font-normal">Font:</span>
+              <span className="font-bold text-slate-900 dark:text-white capitalize">
+                {FONT_OPTIONS.find(f => f.id === currentFont)?.label || 'Geometric'}
+              </span>
+              <span className={`text-[10px] px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold ${numberFontClass}`}>
+                28
+              </span>
+            </button>
+
+            {showFontMenu && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setShowFontMenu(false)} />
+                <div className="absolute right-0 mt-2 w-64 p-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-30 space-y-1 animate-fade-in">
+                  <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Number Font Style
+                  </div>
+                  {FONT_OPTIONS.map(f => {
+                    const isSelected = currentFont === f.id;
+                    const fontPreviewClass = 
+                      f.id === 'geometric' ? 'font-geometric' :
+                      f.id === 'sans' ? 'font-sans' :
+                      f.id === 'rounded' ? 'font-rounded' : 'font-mono';
+
+                    return (
+                      <button
+                        key={f.id}
+                        onClick={() => {
+                          updatePreferences({ calendarNumberFont: f.id });
+                          setShowFontMenu(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition-all ${
+                          isSelected
+                            ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        <div>
+                          <p className="text-xs font-bold flex items-center space-x-1.5">
+                            <span>{f.label}</span>
+                            {isSelected && <Check size={12} className="stroke-[3]" />}
+                          </p>
+                          <p className="text-[10px] text-slate-400">{f.description}</p>
+                        </div>
+                        <span className={`text-base font-bold tabular-nums px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 ${fontPreviewClass}`}>
+                          {f.preview}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
           <button
             onClick={() => openCreateActivityModal({ date: toDateString(currentDate) })}
             className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition-all flex items-center space-x-1.5"
@@ -165,10 +254,10 @@ export const CalendarView: React.FC = () => {
 
       {/* Calendar Header Card */}
       <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
-        <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-mono">
+        <h3 className={`text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight ${numberFontClass}`}>
           {headerTitle}
         </h3>
-        <span className="text-xs text-slate-400 font-medium">
+        <span className="text-xs text-slate-400 font-medium hidden sm:inline">
           Click any date or slot to record or inspect
         </span>
       </div>
@@ -208,16 +297,16 @@ export const CalendarView: React.FC = () => {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center font-mono ${
+                      <span className={`text-xs sm:text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center transition-all ${numberFontClass} ${
                         isCurrentDay 
-                          ? 'bg-emerald-600 text-white shadow-sm' 
-                          : 'text-slate-700 dark:text-slate-300'
+                          ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-500/20 font-extrabold' 
+                          : 'text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
                       }`}>
                         {dateObj.getDate()}
                       </span>
 
                       {totalMins > 0 && (
-                        <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 ${numberFontClass}`}>
                           {formatDuration(totalMins)}
                         </span>
                       )}
@@ -245,7 +334,7 @@ export const CalendarView: React.FC = () => {
                         );
                       })}
                       {dayActs.length > 3 && (
-                        <span className="text-[10px] font-semibold text-slate-400 pl-1 block">
+                        <span className={`text-[10px] font-semibold text-slate-400 pl-1 block ${numberFontClass}`}>
                           +{dayActs.length - 3} more
                         </span>
                       )}
@@ -284,15 +373,15 @@ export const CalendarView: React.FC = () => {
 
                 return (
                   <div key={dateStr} className="p-3 text-center">
-                    <p className="text-[10px] uppercase font-bold text-slate-400">
+                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                       {d.toLocaleDateString('en-US', { weekday: 'short' })}
                     </p>
-                    <p className={`text-base font-extrabold font-mono mt-0.5 inline-block px-2 py-0.5 rounded-full ${
-                      isCurrent ? 'bg-emerald-600 text-white' : 'text-slate-800 dark:text-white'
+                    <p className={`text-base sm:text-lg font-black mt-1 inline-flex items-center justify-center w-8 h-8 rounded-full transition-all ${numberFontClass} ${
+                      isCurrent ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 ring-2 ring-emerald-500/20' : 'text-slate-800 dark:text-white'
                     }`}>
                       {d.getDate()}
                     </p>
-                    <p className="text-[10px] font-mono text-slate-500 mt-1">
+                    <p className={`text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 ${numberFontClass}`}>
                       {totalMins > 0 ? formatDuration(totalMins) : '0h'}
                     </p>
                   </div>
@@ -329,7 +418,7 @@ export const CalendarView: React.FC = () => {
                           <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                             {act.title}
                           </p>
-                          <div className="flex items-center justify-between mt-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                          <div className={`flex items-center justify-between mt-1 text-[10px] text-slate-500 dark:text-slate-400 font-medium ${numberFontClass}`}>
                             <span>{act.startTime}</span>
                             <span className="font-bold">{formatDuration(act.durationMinutes)}</span>
                           </div>
@@ -371,7 +460,7 @@ export const CalendarView: React.FC = () => {
 
               return (
                 <div key={h} className="py-2 flex items-start space-x-4 group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 px-2 rounded-xl transition-colors">
-                  <span className="w-16 text-right font-mono text-xs font-semibold text-slate-400 pt-1">
+                  <span className={`w-16 text-right text-xs font-semibold text-slate-400 pt-1 tracking-tight ${numberFontClass}`}>
                     {formatTimeDisplay(timeStr, preferences.is24Hour)}
                   </span>
 
@@ -382,7 +471,7 @@ export const CalendarView: React.FC = () => {
                         className="w-full h-8 text-left text-xs text-transparent group-hover:text-slate-400 hover:!text-emerald-500 flex items-center space-x-1 transition-colors"
                       >
                         <Plus size={12} />
-                        <span>Log activity at {formatTimeDisplay(timeStr, preferences.is24Hour)}</span>
+                        <span className={numberFontClass}>Log activity at {formatTimeDisplay(timeStr, preferences.is24Hour)}</span>
                       </button>
                     ) : (
                       <div className="space-y-2">
@@ -399,11 +488,11 @@ export const CalendarView: React.FC = () => {
                                 <span className="text-xs font-bold text-slate-900 dark:text-white">
                                   {act.title}
                                 </span>
-                                <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+                                <span className={`text-xs font-bold text-slate-700 dark:text-slate-300 ${numberFontClass}`}>
                                   {formatDuration(act.durationMinutes)}
                                 </span>
                               </div>
-                              <div className="flex items-center space-x-2 mt-1 text-[11px] text-slate-500 font-mono">
+                              <div className={`flex items-center space-x-2 mt-1 text-[11px] text-slate-500 font-medium ${numberFontClass}`}>
                                 <span>{act.startTime} - {act.endTime}</span>
                                 <span>•</span>
                                 <span style={{ color: cat?.color }}>{cat?.name}</span>
@@ -430,12 +519,12 @@ export const CalendarView: React.FC = () => {
           >
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                <h3 className={`text-base font-bold text-slate-900 dark:text-white ${numberFontClass}`}>
                   {formatDateDisplay(selectedDayActivities.date, 'full')}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {selectedDayActivities.acts.length} activities logged •{' '}
-                  {formatDuration(selectedDayActivities.acts.reduce((s, a) => s + a.durationMinutes, 0))} total
+                  <span className={`font-bold ${numberFontClass}`}>{selectedDayActivities.acts.length}</span> activities logged •{' '}
+                  <span className={`font-bold ${numberFontClass}`}>{formatDuration(selectedDayActivities.acts.reduce((s, a) => s + a.durationMinutes, 0))}</span> total
                 </p>
               </div>
               <button
@@ -463,12 +552,12 @@ export const CalendarView: React.FC = () => {
                         <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {act.title}
                         </h4>
-                        <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+                        <p className={`text-[11px] text-slate-500 font-medium mt-0.5 ${numberFontClass}`}>
                           {act.startTime} - {act.endTime} • {cat?.name}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2 flex-shrink-0">
-                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 ${numberFontClass}`}>
                           {formatDuration(act.durationMinutes)}
                         </span>
                         <button

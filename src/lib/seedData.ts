@@ -40,6 +40,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   defaultView: 'dashboard',
   soundEffects: true,
   theme: 'dark',
+  calendarNumberFont: 'geometric',
 };
 
 export const ALEX_CATEGORIES: Category[] = [

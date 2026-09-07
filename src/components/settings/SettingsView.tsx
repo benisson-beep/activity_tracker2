@@ -23,7 +23,7 @@ import {
 import { useActivity } from '../../context/ActivityContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Category, PlanTier } from '../../types';
+import { Category, PlanTier, CalendarNumberFontStyle } from '../../types';
 import { CategoryIcon, AVAILABLE_ICONS, PRESET_COLORS } from '../common/CategoryIcon';
 import { storage } from '../../lib/storage';
 import { playSessionCompleteChime, requestNotificationPermission, sendFocusCompleteNotification } from '../../lib/notification';
@@ -286,6 +286,47 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onLogout, onOpenCont
               >
                 {preferences.startWeekOnMonday ? 'Monday' : 'Sunday'}
               </button>
+            </div>
+
+            {/* Calendar Number Font Style */}
+            <div className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                  Calendar Number Font
+                </span>
+                <span className="text-xs text-slate-500">
+                  Select typography for dates, times, and duration figures in the calendar
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {[
+                  { id: 'geometric', label: 'Geometric', sample: '28' },
+                  { id: 'sans', label: 'Clean Sans', sample: '28' },
+                  { id: 'rounded', label: 'Rounded', sample: '28' },
+                  { id: 'mono', label: 'Mono', sample: '28' },
+                ].map(opt => {
+                  const isSelected = (preferences.calendarNumberFont || 'geometric') === opt.id;
+                  const fontCls = 
+                    opt.id === 'geometric' ? 'font-geometric' :
+                    opt.id === 'sans' ? 'font-sans' :
+                    opt.id === 'rounded' ? 'font-rounded' : 'font-mono';
+
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => updatePreferences({ calendarNumberFont: opt.id as CalendarNumberFontStyle })}
+                      className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border flex items-center space-x-1.5 transition-all ${
+                        isSelected
+                          ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800 shadow-xs'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <span className={`text-xs font-bold ${fontCls}`}>{opt.sample}</span>
+                      <span>{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Theme Toggle */}
