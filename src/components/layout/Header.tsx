@@ -30,6 +30,7 @@ interface HeaderProps {
   onLogout?: () => void;
   onOpenHelp?: () => void;
   onOpenContact?: () => void;
+  onOpenAuth?: (mode?: 'signin' | 'signup') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -38,7 +39,8 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
   onLogout,
   onOpenHelp,
-  onOpenContact
+  onOpenContact,
+  onOpenAuth
 }) => {
   const { 
     openCreateActivityModal, 
@@ -267,6 +269,17 @@ export const Header: React.FC<HeaderProps> = ({
                     )}
                   </button>
                 ))}
+
+                <button
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    onOpenAuth?.('signup');
+                  }}
+                  className="w-full px-4 py-2 flex items-center space-x-2 text-xs text-emerald-600 dark:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 font-semibold transition-colors border-t border-slate-100 dark:border-slate-800/60 mt-1"
+                >
+                  <UserPlus size={13} />
+                  <span>Sign In / Create Account...</span>
+                </button>
               </div>
 
               {/* Settings, Help, Contact, and Logout Links */}

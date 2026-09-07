@@ -27,6 +27,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { triggerConfetti } from '../../lib/confetti';
 import { SocialIcons } from '../common/SocialIcons';
+import { AuthModal } from '../auth/AuthModal';
 
 interface LandingPageProps {
   onEnterApp: () => void;
@@ -36,6 +37,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
   const { users, switchUser } = useAuth();
   const [activePersonaId, setActivePersonaId] = useState('user_alex');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Auth modal state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
+
+  const openAuth = (mode: 'signin' | 'signup' = 'signin') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
 
   // Contact form state
   const [contactName, setContactName] = useState('');
@@ -87,12 +97,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           <a href="#contact" className="hover:text-white transition-colors">Contact</a>
         </nav>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2.5">
           <button
-            onClick={() => handleSelectPersonaAndEnter('user_alex')}
+            onClick={() => openAuth('signin')}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-900 transition-colors"
+          >
+            Sign In
+          </button>
+          <button
+            onClick={() => openAuth('signup')}
             className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center space-x-1.5"
           >
-            <span>Launch App Demo</span>
+            <span>Sign Up Free</span>
             <ArrowRight size={13} />
           </button>
         </div>
@@ -127,17 +143,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         {/* Hero CTAs */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
-            onClick={() => handleSelectPersonaAndEnter('user_alex')}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-xl shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center space-x-2"
+            onClick={() => openAuth('signup')}
+            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-xl shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center space-x-2"
           >
-            <span>Open Interactive App</span>
+            <span>Sign Up Free & Start Tracking</span>
             <ArrowRight size={16} />
           </button>
           <button
-            onClick={() => handleSelectPersonaAndEnter('user_new')}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-850 text-white font-semibold text-sm border border-slate-800 transition-all flex items-center justify-center space-x-2"
+            onClick={() => handleSelectPersonaAndEnter('user_alex')}
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm border border-slate-800 transition-all flex items-center justify-center space-x-2"
           >
-            <span>Test Onboarding (Blank User)</span>
+            <Play size={15} className="text-emerald-400" />
+            <span>Launch Interactive Demo</span>
           </button>
         </div>
 
@@ -317,7 +334,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               </ul>
             </div>
             <button
-              onClick={() => handleSelectPersonaAndEnter('user_new')}
+              onClick={() => openAuth('signup')}
               className="mt-6 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-colors"
             >
               Get Started Free
@@ -665,7 +682,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <ul className="space-y-2 text-xs text-slate-400">
               <li><a href="#faq" className="hover:text-emerald-400 transition-colors">Frequently Asked Questions</a></li>
               <li><a href="#contact" className="hover:text-emerald-400 transition-colors">Contact Support</a></li>
-              <li><a href="https://github.com/benisson-beep/activity_tracker2" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">GitHub Repository</a></li>
+              <li><a href="https://instagram.com/chronicleapp" target="_blank" rel="noopener noreferrer" className="hover:text-pink-400 transition-colors">Instagram (@chronicleapp)</a></li>
               <li><span className="text-slate-500">Data Sovereignty & Privacy</span></li>
             </ul>
           </div>
@@ -679,6 +696,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           </p>
         </div>
       </footer>
+
+      {/* Sign In & Sign Up Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authModalMode}
+        onSuccess={onEnterApp}
+      />
     </div>
   );
 };

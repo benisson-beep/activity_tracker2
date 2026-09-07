@@ -13,6 +13,7 @@ import { ActivityModal } from './components/activity/ActivityModal';
 import { OnboardingModal } from './components/onboarding/OnboardingModal';
 import { HelpModal } from './components/common/HelpModal';
 import { ContactModal } from './components/contact/ContactModal';
+import { AuthModal } from './components/auth/AuthModal';
 import { ToastContainer } from './components/common/ToastContainer';
 import { LandingPage } from './components/landing/LandingPage';
 
@@ -36,7 +37,14 @@ const MainAppContent: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
   const [showLandingPage, setShowLandingPage] = useState(false);
+
+  const openAuthModal = (mode: 'signin' | 'signup' = 'signin') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
 
   const handleLogout = () => {
     logoutUser();
@@ -103,6 +111,7 @@ const MainAppContent: React.FC = () => {
           onLogout={handleLogout}
           onOpenHelp={() => setIsHelpOpen(true)}
           onOpenContact={() => setIsContactModalOpen(true)}
+          onOpenAuth={openAuthModal}
         />
 
         {/* View Switcher Banner (allows easy toggle back to Marketing Landing Page) */}
@@ -185,6 +194,12 @@ const MainAppContent: React.FC = () => {
       <ContactModal 
         isOpen={isContactModalOpen} 
         onClose={() => setIsContactModalOpen(false)} 
+      />
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        initialMode={authModalMode}
+        onSuccess={() => setShowLandingPage(false)}
       />
       <ToastContainer />
     </div>
