@@ -322,7 +322,7 @@ export const analyticsEngine = {
         type: 'recommendation',
         title: 'Start Logging Today',
         description: 'Hit Quick Add or press N to record your first block of focused time.',
-        icon: 'Sparkles',
+        icon: 'Compass',
       });
       return insights;
     }
@@ -336,7 +336,7 @@ export const analyticsEngine = {
         type: 'trend',
         title: `Prime Focus Window: ${topPeriod.name.split(' ')[0]}`,
         description: `You complete ${topPeriod.percentage}% of your logged activity during ${topPeriod.name.toLowerCase()}. Schedule high-leverage work here.`,
-        icon: 'Zap',
+        icon: 'TrendingUp',
       });
     }
 

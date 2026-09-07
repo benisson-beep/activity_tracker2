@@ -1,5 +1,5 @@
 /**
- * Date and Time Utilities for Chronicle SaaS
+ * Date and Time Utilities for Chronicle
  * Zero external dependency, robust, and timezone safe
  */
 

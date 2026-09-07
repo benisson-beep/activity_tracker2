@@ -31,8 +31,8 @@ import { CategoryIcon } from '../common/CategoryIcon';
 type CalendarMode = 'month' | 'week' | 'day';
 
 const FONT_OPTIONS: { id: CalendarNumberFontStyle; label: string; preview: string; description: string }[] = [
-  { id: 'geometric', label: 'Geometric', preview: '01 24', description: 'Outfit — Modern, circular & clean' },
-  { id: 'sans', label: 'Clean Sans', preview: '01 24', description: 'Inter — Balanced, modern SaaS proportional' },
+  { id: 'geometric', label: 'Geometric', preview: '01 24', description: 'Outfit — Modern, clean circular digits' },
+  { id: 'sans', label: 'Clean Sans', preview: '01 24', description: 'Inter — Balanced, modern proportional' },
   { id: 'rounded', label: 'Rounded', preview: '01 24', description: 'Plus Jakarta — Soft friendly curved numerals' },
   { id: 'mono', label: 'Mono Tech', preview: '01 24', description: 'JetBrains — Fixed-width developer terminal' },
 ];

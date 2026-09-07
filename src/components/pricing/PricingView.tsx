@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Check, 
-  Sparkles, 
   ShieldCheck, 
-  Zap, 
   ArrowRight, 
   HelpCircle, 
   ChevronDown, 
@@ -56,14 +54,14 @@ export const PricingView: React.FC = () => {
     <div className="max-w-6xl mx-auto space-y-10 pb-16">
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-3 pt-4">
-        <span className="text-[11px] font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-          Transparent SaaS Pricing
+        <span className="text-[11px] font-medium tracking-wide px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+          Plans & Pricing
         </span>
         <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-          Invest in your focus and truth-of-day output
+          Simple, transparent pricing
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-          Simple, transparent plans designed for high-output engineers, researchers, founders, and teams.
+          Clear plans designed for personal productivity and teams. Upgrade or cancel anytime.
         </p>
 
         {/* Monthly vs Annual Toggle */}
@@ -154,7 +152,7 @@ export const PricingView: React.FC = () => {
           currentUser.plan === 'pro' ? 'ring-2 ring-emerald-500/30' : ''
         }`}>
           <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase tracking-wider shadow-sm">
-            Most Popular Choice
+            Most Popular
           </div>
 
           <div>
@@ -166,7 +164,7 @@ export const PricingView: React.FC = () => {
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400 mt-1">For deep work architects & high performers</p>
+            <p className="text-xs text-slate-400 mt-1">For daily practitioners and professionals</p>
 
             <div className="mt-6 flex items-baseline font-mono">
               <span className="text-4xl font-black text-slate-900 dark:text-white">
@@ -198,7 +196,7 @@ export const PricingView: React.FC = () => {
               </li>
               <li className="flex items-center space-x-2.5">
                 <Check size={15} className="text-emerald-500 flex-shrink-0" />
-                <span>Automated goal velocity tracking</span>
+                <span>Goal progress tracking</span>
               </li>
             </ul>
           </div>
@@ -216,7 +214,7 @@ export const PricingView: React.FC = () => {
           </button>
         </div>
 
-        {/* Tier 3: Enterprise Pods */}
+        {/* Tier 3: Team */}
         <div className={`p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border transition-all flex flex-col justify-between ${
           currentUser.plan === 'team'
             ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md'
@@ -224,14 +222,14 @@ export const PricingView: React.FC = () => {
         }`}>
           <div>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Enterprise Pods</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Team</h3>
               {currentUser.plan === 'team' && (
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-600">
                   Active
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400 mt-1">For research labs, engineering pods & teams</p>
+            <p className="text-xs text-slate-400 mt-1">For teams, studios, and small companies</p>
 
             <div className="mt-6 flex items-baseline font-mono">
               <span className="text-4xl font-black text-slate-900 dark:text-white">
@@ -243,7 +241,7 @@ export const PricingView: React.FC = () => {
             <ul className="mt-6 space-y-3 text-xs text-slate-600 dark:text-slate-300">
               <li className="flex items-center space-x-2.5">
                 <Check size={15} className="text-emerald-500 flex-shrink-0" />
-                <span className="font-semibold text-slate-900 dark:text-white">Everything in Pro tier</span>
+                <span className="font-semibold text-slate-900 dark:text-white">Everything in Pro</span>
               </li>
               <li className="flex items-center space-x-2.5">
                 <Check size={15} className="text-emerald-500 flex-shrink-0" />
@@ -259,7 +257,7 @@ export const PricingView: React.FC = () => {
               </li>
               <li className="flex items-center space-x-2.5">
                 <Check size={15} className="text-emerald-500 flex-shrink-0" />
-                <span>Dedicated account engineer & SLA</span>
+                <span>Dedicated support & SLA</span>
               </li>
             </ul>
           </div>
@@ -273,7 +271,7 @@ export const PricingView: React.FC = () => {
                 : 'bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-white'
             }`}
           >
-            {currentUser.plan === 'team' ? 'Current Active Plan' : 'Select Enterprise Pod'}
+            {currentUser.plan === 'team' ? 'Current Active Plan' : 'Select Team Plan'}
           </button>
         </div>
       </div>
@@ -291,7 +289,7 @@ export const PricingView: React.FC = () => {
                 <th className="py-3 px-2">Capability</th>
                 <th className="py-3 px-2 text-center">Free</th>
                 <th className="py-3 px-2 text-center text-emerald-500 font-bold">Pro</th>
-                <th className="py-3 px-2 text-center">Enterprise</th>
+                <th className="py-3 px-2 text-center">Team</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">

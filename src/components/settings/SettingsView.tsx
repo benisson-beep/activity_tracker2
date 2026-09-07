@@ -11,8 +11,6 @@ import {
   Upload, 
   RotateCcw, 
   Check, 
-  Sparkles,
-  Zap,
   Sliders,
   Bell,
   Volume2,
@@ -135,10 +133,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onLogout, onOpenCont
       {/* Header */}
       <div>
         <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-          System & Account Settings
+          Settings
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-          Customize your categories, display formats, SaaS subscription, and data backups
+          Manage categories, preferences, plan, and data backups
         </p>
       </div>
 
@@ -147,7 +145,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onLogout, onOpenCont
         {[
           { id: 'categories', label: 'Categories', icon: <Tag size={14} /> },
           { id: 'preferences', label: 'Preferences', icon: <Sliders size={14} /> },
-          { id: 'subscription', label: 'SaaS Plan', icon: <ShieldCheck size={14} /> },
+          { id: 'subscription', label: 'Plan & Billing', icon: <ShieldCheck size={14} /> },
           { id: 'data', label: 'Data & Backup', icon: <Download size={14} /> },
         ].map(tab => (
           <button
@@ -508,7 +506,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onLogout, onOpenCont
                   Popular
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">For deep work architects & high performers</p>
+              <p className="text-xs text-slate-400 mt-1">For daily practitioners and professionals</p>
               <p className="mt-4 text-2xl font-black text-slate-900 dark:text-white font-mono">
                 $12 <span className="text-xs font-normal text-slate-400">/ month</span>
               </p>
@@ -536,8 +534,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onLogout, onOpenCont
             <div className={`p-5 rounded-2xl bg-white dark:bg-slate-900 border transition-all ${
               currentUser.plan === 'team' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 dark:border-slate-800'
             }`}>
-              <h4 className="text-base font-bold text-slate-900 dark:text-white">Team / Enterprise</h4>
-              <p className="text-xs text-slate-400 mt-1">For engineering & research pods</p>
+              <h4 className="text-base font-bold text-slate-900 dark:text-white">Team</h4>
+              <p className="text-xs text-slate-400 mt-1">For collaborative teams and studios</p>
               <p className="mt-4 text-2xl font-black text-slate-900 dark:text-white font-mono">
                 $29 <span className="text-xs font-normal text-slate-400">/ seat / mo</span>
               </p>

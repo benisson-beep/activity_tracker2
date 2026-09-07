@@ -9,9 +9,8 @@ import {
   EyeOff, 
   ArrowRight, 
   Check, 
-  Zap, 
+  Clock, 
   ShieldCheck, 
-  Sparkles,
   UserCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -133,13 +132,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-emerald-500/20">
-              <Zap size={18} className="fill-slate-950" />
+              <Clock size={18} className="text-slate-950 stroke-[2.2]" />
             </div>
             <div>
               <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight">
                 Chronicle
               </h3>
-              <p className="text-[10px] text-slate-400 font-mono">Personal Activity OS</p>
+              <p className="text-[11px] text-slate-400">Activity Tracker</p>
             </div>
           </div>
           <button
@@ -468,7 +467,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   className="w-3.5 h-3.5 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
                 />
                 <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
-                  I accept the Chronicle Terms of Service and guarantee full personal data sovereignty.
+                  I agree to the Terms of Service and Privacy Policy.
                 </span>
               </label>
 
@@ -478,11 +477,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 active:scale-98 transition-all flex items-center justify-center space-x-2"
               >
                 {isSubmitting ? (
-                  <span>Initializing workspace...</span>
+                  <span>Creating account...</span>
                 ) : (
                   <>
-                    <Sparkles size={14} />
-                    <span>Create Account & Start Tracking</span>
+                    <span>Create Account</span>
+                    <ArrowRight size={14} />
                   </>
                 )}
               </button>

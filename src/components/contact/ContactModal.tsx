@@ -6,7 +6,6 @@ import {
   MessageSquare, 
   ShieldCheck, 
   CheckCircle2, 
-  Sparkles, 
   Clock, 
   Building, 
   HelpCircle,

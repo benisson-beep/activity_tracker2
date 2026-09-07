@@ -5,8 +5,6 @@ import {
   Calendar as CalendarIcon, 
   Activity as ActivityIcon, 
   TrendingUp, 
-  Sparkles, 
-  Zap, 
   Focus,
   PieChart,
   Grid
@@ -112,10 +110,10 @@ export const AnalyticsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Activity Analytics & Time Intelligence
+            Analytics
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Objective metrics answering where your focused hours actually went
+            A clear breakdown of how your time is distributed across categories and days
           </p>
         </div>
 

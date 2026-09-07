@@ -5,7 +5,6 @@ import {
   Flame, 
   Compass, 
   Plus, 
-  Sparkles, 
   ArrowRight,
   MoreVertical,
   Edit2,
@@ -87,14 +86,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Executive Welcome Bar */}
+      {/* Welcome Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
             {getGreeting()}, {currentUser.name.split(' ')[0]} 👋
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            {formatDateDisplay(today, 'full')} • Here is the truth of your day so far.
+            {formatDateDisplay(today, 'full')} • Activity summary for today
           </p>
         </div>
 
@@ -103,7 +102,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             onClick={() => onNavigate('reports')}
             className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1.5"
           >
-            <span>Daily Debrief</span>
+            <span>Daily Summary</span>
             <ArrowRight size={13} />
           </button>
           <button
@@ -142,7 +141,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         />
 
         <MetricCard
-          title="Goal Velocity"
+          title="Goal Progress"
           value={topGoalProg ? `${topGoalProg.percentage}%` : 'No Goals'}
           subtitle={topGoal ? topGoal.title : 'Configure in Goals tab'}
           badge={topGoalProg?.status === 'ahead' ? 'Ahead' : topGoalProg?.status === 'completed' ? 'Done' : undefined}
@@ -187,7 +186,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             onClick={() => onNavigate('activities')}
             className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center space-x-1"
           >
-            <span>View All Stream</span>
+            <span>View All</span>
             <ArrowRight size={13} />
           </button>
         </div>

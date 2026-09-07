@@ -7,7 +7,6 @@ import {
   Clock, 
   Trash2, 
   X, 
-  Sparkles,
   TrendingUp,
   AlertCircle
 } from 'lucide-react';
@@ -83,10 +82,10 @@ export const GoalsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Goals & Habit Milestones
+            Goals
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Targets calculated automatically from your recorded activities in real time
+            Track your weekly and monthly activity targets
           </p>
         </div>
 
@@ -95,7 +94,7 @@ export const GoalsView: React.FC = () => {
           className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition-all flex items-center space-x-1.5 self-start sm:self-auto"
         >
           <Plus size={15} className="stroke-[2.5]" />
-          <span>New Goal Target</span>
+          <span>New Goal</span>
         </button>
       </div>
 

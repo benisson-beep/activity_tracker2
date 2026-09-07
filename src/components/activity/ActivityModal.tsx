@@ -5,7 +5,6 @@ import {
   Calendar as CalendarIcon, 
   Tag as TagIcon, 
   Link as LinkIcon, 
-  Zap, 
   Check, 
   AlertCircle,
   Plus

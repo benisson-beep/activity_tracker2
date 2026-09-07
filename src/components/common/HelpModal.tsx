@@ -3,7 +3,6 @@ import {
   X, 
   Keyboard, 
   HelpCircle, 
-  Sparkles, 
   Command, 
   Mail, 
   MessageSquare, 

@@ -14,7 +14,6 @@ import {
   UserPlus, 
   ShieldCheck, 
   LogOut,
-  Sparkles,
   HelpCircle,
   Mail
 } from 'lucide-react';
@@ -79,18 +78,18 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const viewTitles: Record<ViewMode, { title: string; subtitle: string }> = {
-    dashboard: { title: 'Executive Overview', subtitle: "What you have done and what's next" },
-    activities: { title: 'Activity Stream', subtitle: 'Detailed chronological history and filters' },
-    calendar: { title: 'Activity Calendar', subtitle: 'Visual day, week, and month view' },
-    analytics: { title: 'Time Intelligence', subtitle: 'Real patterns, consistency, and focus metrics' },
-    goals: { title: 'Goals & Milestones', subtitle: 'Real-time progress tied directly to recorded activities' },
-    reports: { title: 'Executive Reports', subtitle: 'Daily debriefs, weekly summaries, and exports' },
-    timer: { title: 'Deep Focus Timer', subtitle: 'Countdown focus intervals, stopwatches, and chime alerts' },
+    dashboard: { title: 'Dashboard', subtitle: "Today's summary and recent activity" },
+    activities: { title: 'Activities', subtitle: 'Chronological timeline and filtered logs' },
+    calendar: { title: 'Calendar', subtitle: 'Visual day, week, and month view' },
+    analytics: { title: 'Analytics', subtitle: 'Trends, category breakdowns, and focus patterns' },
+    goals: { title: 'Goals', subtitle: 'Progress tracking tied to logged time' },
+    reports: { title: 'Reports', subtitle: 'Weekly summaries, exports, and time breakdowns' },
+    timer: { title: 'Focus Timer', subtitle: 'Countdown focus intervals, stopwatches, and session alerts' },
     pricing: { title: 'Plans & Pricing', subtitle: 'Simple, transparent pricing for individuals and teams' },
-    settings: { title: 'System Settings', subtitle: 'Manage custom categories, preferences, and plans' },
+    settings: { title: 'Settings', subtitle: 'Manage custom categories and preferences' },
   };
 
-  const currentInfo = viewTitles[currentView] || { title: 'Chronicle', subtitle: 'Activity Intelligence' };
+  const currentInfo = viewTitles[currentView] || { title: 'Chronicle', subtitle: 'Activity Tracker' };
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
@@ -105,14 +104,9 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-base md:text-lg font-bold text-slate-900 dark:text-white capitalize">
-              {currentInfo.title}
-            </h1>
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
-              Live
-            </span>
-          </div>
+          <h1 className="text-base md:text-lg font-bold text-slate-900 dark:text-white capitalize">
+            {currentInfo.title}
+          </h1>
           <p className="hidden md:block text-xs text-slate-500 dark:text-slate-400">
             {currentInfo.subtitle}
           </p>
@@ -303,7 +297,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="w-full px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center space-x-2"
                 >
                   <HelpCircle size={14} className="text-emerald-500" />
-                  <span>Ask for Help & FAQs</span>
+                  <span>Help & FAQ</span>
                 </button>
 
                 <button
@@ -314,7 +308,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="w-full px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center space-x-2"
                 >
                   <Mail size={14} className="text-teal-500" />
-                  <span>Contact Support Team</span>
+                  <span>Contact Support</span>
                 </button>
 
                 <button
@@ -325,7 +319,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="w-full px-4 py-2 text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center space-x-2 transition-colors border-t border-slate-100 dark:border-slate-800/60 mt-1"
                 >
                   <LogOut size={14} />
-                  <span>Sign Out / Log Out</span>
+                  <span>Sign Out</span>
                 </button>
               </div>
             </div>

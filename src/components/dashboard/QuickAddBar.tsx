@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, SlidersHorizontal, Check, Zap } from 'lucide-react';
+import { Plus, SlidersHorizontal, Check } from 'lucide-react';
 import { useActivity } from '../../context/ActivityContext';
 import { getCurrentTimeString, addMinutesToTime, getTodayString } from '../../lib/dateUtils';
 

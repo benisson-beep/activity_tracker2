@@ -50,7 +50,7 @@ export const ALEX_CATEGORIES: Category[] = [
   { id: 'cat_strategy', name: 'Product Strategy', color: '#ec4899', icon: 'Compass', defaultDurationMinutes: 45, isSystem: false },
   { id: 'cat_learning', name: 'Reading & Learning', color: '#f59e0b', icon: 'BookOpen', defaultDurationMinutes: 45, isSystem: false },
   { id: 'cat_admin', name: 'Comms & Admin', color: '#64748b', icon: 'Mail', defaultDurationMinutes: 25, isSystem: false },
-  { id: 'cat_wellness', name: 'Recovery & Mind', color: '#06b6d4', icon: 'Sparkles', defaultDurationMinutes: 20, isSystem: false },
+  { id: 'cat_wellness', name: 'Recovery & Mind', color: '#06b6d4', icon: 'HeartPulse', defaultDurationMinutes: 20, isSystem: false },
 ];
 
 export const ELENA_CATEGORIES: Category[] = [

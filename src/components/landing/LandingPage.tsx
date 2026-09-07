@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Zap, 
   ArrowRight, 
   Check, 
   Clock, 
@@ -8,7 +7,6 @@ import {
   Target, 
   BarChart3, 
   FileSpreadsheet, 
-  Sparkles, 
   ShieldCheck, 
   Play, 
   ChevronRight,
@@ -77,21 +75,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
       {/* Top Marketing Navigation */}
       <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 sm:px-8 h-16 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-300 flex items-center justify-center text-slate-950 shadow-md shadow-emerald-950">
-            <Zap size={18} className="fill-slate-950" />
+          <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm">
+            <Clock size={16} className="stroke-[2.5]" />
           </div>
           <span className="font-extrabold text-lg text-white tracking-tight">
             Chronicle
           </span>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/50">
-            Personal Activity OS
+          <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
+            Activity Tracker
           </span>
         </div>
 
-        <nav className="hidden md:flex items-center space-x-6 text-xs font-semibold text-slate-400">
+        <nav className="hidden md:flex items-center space-x-6 text-xs font-medium text-slate-400">
           <a href="#features" className="hover:text-white transition-colors">Features</a>
-          <a href="#intelligence" className="hover:text-white transition-colors">Intelligence</a>
-          <a href="#personas" className="hover:text-white transition-colors">Demo Personas</a>
+          <a href="#personas" className="hover:text-white transition-colors">Demo Accounts</a>
           <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
           <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           <a href="#contact" className="hover:text-white transition-colors">Contact</a>
@@ -106,9 +103,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           </button>
           <button
             onClick={() => openAuth('signup')}
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center space-x-1.5"
+            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm active:scale-95 transition-all flex items-center space-x-1.5"
           >
-            <span>Sign Up Free</span>
+            <span>Start Tracking Free</span>
             <ArrowRight size={13} />
           </button>
         </div>
@@ -116,78 +113,70 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
       {/* Hero Section */}
       <section className="relative pt-16 sm:pt-24 pb-20 px-4 sm:px-6 max-w-5xl mx-auto text-center">
-        {/* Subtle Ambient Radial Glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
         <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300 mb-6 shadow-sm">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="font-semibold text-white">Truth-of-Day Logging</span>
-          <span className="text-slate-500">•</span>
-          <span className="text-slate-400">Not a todo list, but what you actually accomplished</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span className="font-medium text-slate-200">Personal Activity Tracker</span>
+          <span className="text-slate-600">•</span>
+          <span className="text-slate-400">Record what you actually spent time on</span>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.1]">
-          Where did your <br />
-          <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-            time truly go today?
-          </span>
+        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.15] max-w-4xl mx-auto">
+          A clear, honest record of <br className="hidden sm:inline" />
+          how you spend your time.
         </h1>
 
-        <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          Chronicle is the premium activity tracking SaaS designed to record what you actually did, then transform that reality into visual daytime flows, calendars, deep analytics, and actionable executive summaries.
+        <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed font-normal">
+          Not another wishful to-do list or micromanaged stopwatch. Chronicle helps you record what actually happened during your day, uncovering real focus hours, category patterns, and steady progress.
         </p>
 
         {/* Hero CTAs */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             onClick={() => openAuth('signup')}
-            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow-xl shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center space-x-2"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md active:scale-95 transition-all flex items-center justify-center space-x-2"
           >
-            <span>Sign Up Free & Start Tracking</span>
+            <span>Start Tracking Free</span>
             <ArrowRight size={16} />
           </button>
           <button
             onClick={() => handleSelectPersonaAndEnter('user_alex')}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm border border-slate-800 transition-all flex items-center justify-center space-x-2"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-sm border border-slate-800 transition-all flex items-center justify-center space-x-2"
           >
-            <Play size={15} className="text-emerald-400" />
-            <span>Launch Interactive Demo</span>
+            <Play size={14} className="text-emerald-400" />
+            <span>Try Interactive Demo</span>
           </button>
         </div>
 
         {/* Hero Interactive App Mockup Preview */}
-        <div className="mt-14 p-2.5 rounded-3xl bg-gradient-to-b from-slate-800/80 to-slate-900/80 border border-slate-800 shadow-2xl overflow-hidden text-left max-w-4xl mx-auto">
+        <div className="mt-14 p-2.5 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl overflow-hidden text-left max-w-4xl mx-auto">
           <div className="rounded-2xl bg-slate-950 p-4 sm:p-6 border border-slate-800/60 space-y-4">
             {/* Window bar */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/60 text-xs">
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-                <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-                <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                <div className="w-3 h-3 rounded-full bg-slate-700" />
+                <div className="w-3 h-3 rounded-full bg-slate-700" />
+                <div className="w-3 h-3 rounded-full bg-slate-700" />
                 <span className="font-mono text-slate-500 text-[11px] ml-2">app.chronicle.io/dashboard</span>
               </div>
-              <span className="text-[11px] font-mono text-emerald-400">● 6h 45m Logged Today</span>
+              <span className="text-[11px] font-semibold text-emerald-400">● 6h 45m Logged Today</span>
             </div>
 
             {/* Quick Demo Preview row */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Engineering Focus</span>
-                <p className="text-xl font-extrabold text-white font-mono mt-1">4.2 hrs</p>
-                <p className="text-emerald-400 text-[11px] mt-0.5">85% of weekly goal</p>
+                <span className="text-slate-400 text-[11px] font-semibold">Engineering Focus</span>
+                <p className="text-xl font-bold text-white tabular-nums mt-1">4.2 hrs</p>
+                <p className="text-emerald-400 text-[11px] mt-0.5">85% of weekly target</p>
               </div>
               <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Daily Rhythm</span>
-                <p className="text-xl font-extrabold text-white font-mono mt-1">5 Sessions</p>
+                <span className="text-slate-400 text-[11px] font-semibold">Daily Schedule</span>
+                <p className="text-xl font-bold text-white tabular-nums mt-1">5 Sessions</p>
                 <p className="text-slate-400 text-[11px] mt-0.5">Peak focus 09:00 - 12:30</p>
               </div>
               <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Consistency</span>
-                <p className="text-xl font-extrabold text-white font-mono mt-1">12-Day Streak</p>
-                <p className="text-indigo-400 text-[11px] mt-0.5">High output velocity</p>
+                <span className="text-slate-400 text-[11px] font-semibold">Consistency</span>
+                <p className="text-xl font-bold text-white tabular-nums mt-1">12-Day Streak</p>
+                <p className="text-slate-400 text-[11px] mt-0.5">Steady daily pace</p>
               </div>
             </div>
 
@@ -207,11 +196,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
       {/* Value Pillars Section */}
       <section id="features" className="py-16 px-4 sm:px-6 max-w-6xl mx-auto border-t border-slate-900">
         <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-            Designed for truth, not wishful planning
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Built for reality, not wishful thinking
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-lg mx-auto">
-            Traditional task managers focus on what you *hope* to do. Chronicle tells you what you *actually did*.
+            Traditional to-do lists capture what you plan to do. Chronicle keeps a clean record of what you actually spent time on.
           </p>
         </div>
 
@@ -220,9 +209,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4">
               <Clock size={20} />
             </div>
-            <h3 className="text-base font-bold text-white">Instant Capture</h3>
+            <h3 className="text-base font-bold text-white">Fast Logging</h3>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              Quick duration chips, natural keyboard shortcuts, or live stopwatch tracking. Record in under 4 seconds without breaking your flow.
+              Quick duration presets, keyboard shortcuts, or a live focus timer. Log an activity in seconds without interrupting your flow.
             </p>
           </div>
 
@@ -230,9 +219,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4">
               <Calendar size={20} />
             </div>
-            <h3 className="text-base font-bold text-white">Visual Day Flows</h3>
+            <h3 className="text-base font-bold text-white">Day Timelines & Calendars</h3>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              24-hour horizontal daytime blocks, weekly multi-column schedules, and monthly calendar matrices. Click any slot to record or inspect.
+              24-hour horizontal daytime blocks, weekly schedules, and month calendar matrices. Click any hour to inspect or log.
             </p>
           </div>
 
@@ -240,9 +229,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-4">
               <BarChart3 size={20} />
             </div>
-            <h3 className="text-base font-bold text-white">Time Intelligence</h3>
+            <h3 className="text-base font-bold text-white">Clear Analytics</h3>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              Meaningful analytics that answer real questions: Where did my hours go? When am I most productive? 14-week consistency heatmaps.
+              Understand where your time went: peak focus hours, category breakdowns, and a 14-week consistency heatmap.
             </p>
           </div>
 
@@ -250,9 +239,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <div className="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center mb-4">
               <Target size={20} />
             </div>
-            <h3 className="text-base font-bold text-white">Reality-Backed Goals</h3>
+            <h3 className="text-base font-bold text-white">Automatic Goals</h3>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              Weekly and monthly target commitments calculated automatically from your recorded activities in real time. No manual ticking.
+              Weekly and monthly target commitments calculated directly from your logged activities. No manual spreadsheet ticking.
             </p>
           </div>
         </div>
@@ -266,10 +255,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               Interactive Test Accounts
             </span>
             <h3 className="text-2xl font-black text-white mt-2">
-              Explore Realistic SaaS Data
+              Try with realistic example accounts
             </h3>
             <p className="text-xs text-slate-400 mt-1">
-              Select any pre-seeded persona to explore Chronicle fully populated, or launch a fresh account to experience onboarding.
+              Explore Chronicle with full example history (Architect or Neuroscientist), or jump into a clean account.
             </p>
           </div>
 
@@ -305,10 +294,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
       <section id="pricing" className="py-16 px-4 sm:px-6 max-w-5xl mx-auto border-t border-slate-900">
         <div className="text-center mb-12">
           <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-            Transparent SaaS Pricing
+            Simple, transparent pricing
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-2">
-            Start free, upgrade as your activity volume and insights grow.
+            Start free for personal use, or upgrade for unlimited history and team features.
           </p>
         </div>
 
@@ -635,11 +624,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                   className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center space-x-2"
                 >
                   {isSubmittingContact ? (
-                    <span>Transmitting message...</span>
+                    <span>Sending message...</span>
                   ) : (
                     <>
                       <Send size={14} />
-                      <span>Send Message to Engineering Team</span>
+                      <span>Send Message</span>
                     </>
                   )}
                 </button>
@@ -655,12 +644,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           <div className="md:col-span-2 space-y-3">
             <div className="flex items-center space-x-2">
               <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950">
-                <Zap size={16} className="fill-slate-950" />
+                <Clock size={16} className="text-slate-950" />
               </div>
               <span className="font-extrabold text-base text-white">Chronicle</span>
             </div>
             <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
-              The professional personal activity tracking SaaS. Record what you truly did, uncover patterns, and master your time.
+              A clear, honest record of your daily activities. Log what you did, understand where your hours go, and build lasting routines.
             </p>
             <div className="pt-2">
               <SocialIcons size="md" />
@@ -689,9 +678,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         </div>
 
         <div className="max-w-7xl mx-auto pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
-          <p>© 2026 Chronicle SaaS Inc. All rights reserved. Truth-of-Day Activity Intelligence.</p>
+          <p>© 2026 Chronicle. Built for honest, intentional time tracking.</p>
           <p className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
             <span>All Systems Operational</span>
           </p>
         </div>

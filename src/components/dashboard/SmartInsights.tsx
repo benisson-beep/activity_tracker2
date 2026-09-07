@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, CheckCircle2, TrendingUp, Focus, HeartPulse, Sparkles } from 'lucide-react';
+import { Zap, CheckCircle2, TrendingUp, Focus, HeartPulse, Compass } from 'lucide-react';
 import { SmartInsight } from '../../types';
 
 interface SmartInsightsProps {
@@ -14,7 +14,7 @@ export const SmartInsights: React.FC<SmartInsightsProps> = ({ insights }) => {
       case 'TrendingUp': return <TrendingUp size={16} className="text-blue-500" />;
       case 'Focus': return <Focus size={16} className="text-indigo-500" />;
       case 'HeartPulse': return <HeartPulse size={16} className="text-rose-500" />;
-      default: return <Sparkles size={16} className="text-emerald-500" />;
+      default: return <Compass size={16} className="text-emerald-500" />;
     }
   };
 
@@ -22,13 +22,13 @@ export const SmartInsights: React.FC<SmartInsightsProps> = ({ insights }) => {
     <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <Sparkles size={16} className="text-emerald-500" />
+          <Compass size={16} className="text-emerald-500" />
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-            Activity Intelligence Insights
+            Activity Patterns & Observations
           </h3>
         </div>
-        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
-          Automated Pattern Detection
+        <span className="text-[10px] font-medium tracking-wide px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+          Based on your logged time
         </span>
       </div>
 

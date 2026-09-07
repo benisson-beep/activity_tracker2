@@ -12,7 +12,7 @@ import {
   Plus, 
   ChevronLeft, 
   ChevronRight, 
-  Zap,
+  Clock,
   HelpCircle,
   LogOut,
   Mail,
@@ -102,20 +102,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => handleNavClick('dashboard')}
           className="flex items-center space-x-2.5 cursor-pointer group truncate"
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-slate-950 shadow-md shadow-emerald-900/30 group-hover:scale-105 transition-transform flex-shrink-0">
-            <Zap size={18} className="fill-slate-950" />
+          <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 flex-shrink-0">
+            <Clock size={18} className="text-slate-950 stroke-[2.2]" />
           </div>
           {isExpanded && (
             <div className="truncate whitespace-nowrap animate-fade-in">
-              <div className="flex items-center space-x-1.5">
-                <span className="font-bold text-white tracking-tight text-base font-sans">
-                  Chronicle
-                </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/50">
-                  SaaS
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 -mt-0.5">Activity Intelligence</p>
+              <span className="font-bold text-white tracking-tight text-base font-sans">
+                Chronicle
+              </span>
+              <p className="text-[11px] text-slate-400">Activity Tracker</p>
             </div>
           )}
         </div>
@@ -226,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 />
                 <div className="truncate whitespace-nowrap">
                   <p className="text-[11px] font-semibold text-slate-300 truncate">{currentUser.name}</p>
-                  <p className="text-[9px] text-emerald-400 font-mono uppercase">{currentUser.plan} TIER</p>
+                  <p className="text-[10px] text-emerald-400 capitalize">{currentUser.plan} plan</p>
                 </div>
               </div>
               <div className="flex items-center space-x-1 flex-shrink-0">

@@ -15,7 +15,7 @@ import {
   Sun, 
   User, 
   X,
-  Sparkles,
+  Command,
   HelpCircle,
   Mail,
   LogOut
@@ -258,9 +258,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             <span>↵ to select</span>
             <span>esc to close</span>
           </div>
-          <div className="flex items-center space-x-1">
-            <Sparkles size={12} className="text-emerald-500" />
-            <span>Chronicle Intelligence</span>
+          <div className="flex items-center space-x-1.5">
+            <Command size={11} className="text-slate-400" />
+            <span>Quick Actions</span>
           </div>
         </div>
       </div>

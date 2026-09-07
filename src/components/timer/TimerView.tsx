@@ -7,8 +7,6 @@ import {
   Bell, 
   Volume2, 
   VolumeX, 
-  Sparkles, 
-  Zap, 
   Clock, 
   Coffee, 
   Flame,
@@ -97,10 +95,10 @@ export const TimerView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Focus & Session Timer
+            Focus Timer
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Distraction-free environment for deep work, study sprints, and live activity logging
+            Time your focus blocks and log your completed sessions
           </p>
         </div>
 

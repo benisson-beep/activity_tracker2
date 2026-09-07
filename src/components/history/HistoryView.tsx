@@ -14,7 +14,6 @@ import {
   Copy,
   ExternalLink,
   ChevronRight,
-  Sparkles,
   Rows,
   GitCommit
 } from 'lucide-react';
@@ -191,10 +190,10 @@ export const HistoryView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Activity Stream & History
+            Activity History
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            {filteredActivities.length} recorded events matching your current filters
+            {filteredActivities.length} {filteredActivities.length === 1 ? 'activity' : 'activities'} logged
           </p>
         </div>
 

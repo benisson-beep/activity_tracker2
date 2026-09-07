@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   Check, 
   ArrowRight, 
-  Sparkles, 
   Target, 
   Layers, 
   Clock, 
@@ -245,8 +244,8 @@ export const OnboardingModal: React.FC = () => {
                   onClick={handleFinish}
                   className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2 transition-all"
                 >
-                  <Sparkles size={14} />
-                  <span>Launch Chronicle</span>
+                  <span>Get Started</span>
+                  <ArrowRight size={14} />
                 </button>
               </div>
             </div>
