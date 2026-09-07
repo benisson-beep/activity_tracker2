@@ -33,7 +33,22 @@ const MainAppContent: React.FC = () => {
   const { currentUser, logoutUser } = useAuth();
 
   const [currentView, setCurrentView] = useState<ViewMode>(preferences.defaultView || 'dashboard');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('chronicle_sidebar_pinned');
+    if (saved !== null) {
+      return saved !== 'true';
+    }
+    return true; // Default to auto-collapse mode so hover-expand/shrink is active immediately
+  });
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('chronicle_sidebar_pinned', String(!next));
+      return next;
+    });
+  };
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -93,7 +108,7 @@ const MainAppContent: React.FC = () => {
         currentView={currentView}
         onNavigate={setCurrentView}
         isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        onToggleCollapse={toggleSidebarCollapse}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
         onOpenHelp={() => setIsHelpOpen(true)}

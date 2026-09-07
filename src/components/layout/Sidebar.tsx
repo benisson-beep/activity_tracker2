@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   LayoutDashboard, 
   ListFilter, 
@@ -16,7 +16,8 @@ import {
   HelpCircle,
   LogOut,
   Mail,
-  X
+  X,
+  Pin
 } from 'lucide-react';
 import { ViewMode } from '../../types';
 import { useActivity } from '../../context/ActivityContext';
@@ -49,6 +50,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { openCreateActivityModal, timerState, categories, activities } = useActivity();
   const { currentUser } = useAuth();
 
+  const [isHovered, setIsHovered] = useState(false);
+  const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false);
+    }, 120);
+  };
+
+  // If isCollapsed is false, the user pinned the sidebar open ("unless it already expanded")
+  // If isCollapsed is true, it expands when cursor enters and shrinks when cursor leaves
+  const isExpanded = !isCollapsed || isHovered || isMobileOpen;
+
   const navItems: Array<{
     id: ViewMode;
     label: string;
@@ -78,13 +100,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800/80">
         <div 
           onClick={() => handleNavClick('dashboard')}
-          className="flex items-center space-x-2.5 cursor-pointer group"
+          className="flex items-center space-x-2.5 cursor-pointer group truncate"
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-slate-950 shadow-md shadow-emerald-900/30 group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-slate-950 shadow-md shadow-emerald-900/30 group-hover:scale-105 transition-transform flex-shrink-0">
             <Zap size={18} className="fill-slate-950" />
           </div>
-          {(!isCollapsed || isMobileOpen) && (
-            <div>
+          {isExpanded && (
+            <div className="truncate whitespace-nowrap animate-fade-in">
               <div className="flex items-center space-x-1.5">
                 <span className="font-bold text-white tracking-tight text-base font-sans">
                   Chronicle
@@ -107,29 +129,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <X size={20} />
           </button>
         ) : (
-          /* Desktop collapse toggle */
+          /* Desktop collapse / pin toggle */
           <button
-            onClick={onToggleCollapse}
+            onClick={e => {
+              e.stopPropagation();
+              onToggleCollapse();
+            }}
             className="hidden lg:flex p-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-lg transition-colors"
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={isCollapsed ? "Lock / Pin sidebar expanded" : "Unpin sidebar (auto-collapse on hover exit)"}
           >
-            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            {isCollapsed ? <Pin size={15} /> : <ChevronLeft size={16} />}
           </button>
         )}
       </div>
 
       {/* Quick Action Button */}
       <div className="p-3">
-        {(!isCollapsed || isMobileOpen) ? (
+        {isExpanded ? (
           <button
             onClick={() => {
               openCreateActivityModal();
               onCloseMobile();
             }}
-            className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition-all"
+            className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition-all whitespace-nowrap animate-fade-in"
           >
-            <Plus size={16} className="stroke-[2.5]" />
-            <span>Record Activity</span>
+            <Plus size={16} className="stroke-[2.5] flex-shrink-0" />
+            <span className="truncate">Record Activity</span>
             <kbd className="ml-auto text-[10px] font-mono opacity-70 bg-emerald-700/60 px-1 rounded">N</kbd>
           </button>
         ) : (
@@ -159,16 +184,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               title={item.label}
             >
               <div className="flex items-center space-x-3 truncate">
-                <span className={`transition-colors ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-slate-200'}`}>
+                <span className={`transition-colors flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-slate-200'}`}>
                   {item.icon}
                 </span>
-                {(!isCollapsed || isMobileOpen) && (
-                  <span className="truncate font-medium">{item.label}</span>
+                {isExpanded && (
+                  <span className="truncate font-medium whitespace-nowrap animate-fade-in">{item.label}</span>
                 )}
               </div>
 
-              {(!isCollapsed || isMobileOpen) && (
-                <div className="flex items-center space-x-1.5 ml-2">
+              {isExpanded && (
+                <div className="flex items-center space-x-1.5 ml-2 flex-shrink-0 animate-fade-in">
                   {item.badge !== undefined && (
                     <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
                       item.id === 'timer' && timerState.isRunning
@@ -190,21 +215,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* User Card & Actions in Footer */}
       <div className="p-3 border-t border-slate-800/80 space-y-2.5">
-        {(!isCollapsed || isMobileOpen) ? (
-          <>
+        {isExpanded ? (
+          <div className="space-y-2.5 animate-fade-in">
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center space-x-2 truncate">
                 <img
                   src={currentUser.avatar}
                   alt={currentUser.name}
-                  className="w-6 h-6 rounded-full object-cover ring-1 ring-emerald-500/40"
+                  className="w-6 h-6 rounded-full object-cover ring-1 ring-emerald-500/40 flex-shrink-0"
                 />
-                <div className="truncate">
+                <div className="truncate whitespace-nowrap">
                   <p className="text-[11px] font-semibold text-slate-300 truncate">{currentUser.name}</p>
                   <p className="text-[9px] text-emerald-400 font-mono uppercase">{currentUser.plan} TIER</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 flex-shrink-0">
                 <button 
                   onClick={onOpenHelp}
                   className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors"
@@ -234,7 +259,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="text-[9px] font-medium text-slate-500 uppercase tracking-wider">Connect</span>
               <SocialIcons size="sm" />
             </div>
-          </>
+          </div>
         ) : (
           <div className="flex flex-col items-center space-y-2">
             <button 
@@ -260,11 +285,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       <aside 
-        className={`hidden lg:block h-screen sticky top-0 transition-all duration-200 z-40 ${
-          isCollapsed ? 'w-20' : 'w-64'
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`hidden lg:block h-screen sticky top-0 transition-all duration-300 ease-in-out z-40 ${
+          !isCollapsed ? 'w-64' : 'w-20'
         }`}
       >
-        {sidebarContent}
+        <div className={`h-full transition-all duration-300 ease-in-out ${
+          isHovered && isCollapsed 
+            ? 'w-64 absolute top-0 left-0 z-50 shadow-2xl shadow-black/80 ring-1 ring-slate-800' 
+            : 'w-full'
+        }`}>
+          {sidebarContent}
+        </div>
       </aside>
 
       {isMobileOpen && (
