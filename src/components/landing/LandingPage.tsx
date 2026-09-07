@@ -14,9 +14,19 @@ import {
   ChevronRight,
   UserCheck,
   Star,
-  Layers
+  Layers,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Mail,
+  Send,
+  CheckCircle2,
+  Building,
+  Timer
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { triggerConfetti } from '../../lib/confetti';
+import { SocialIcons } from '../common/SocialIcons';
 
 interface LandingPageProps {
   onEnterApp: () => void;
@@ -25,6 +35,27 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
   const { users, switchUser } = useAuth();
   const [activePersonaId, setActivePersonaId] = useState('user_alex');
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Contact form state
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactCategory, setContactCategory] = useState('general');
+  const [contactMessage, setContactMessage] = useState('');
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactName.trim() || !contactEmail.trim() || !contactMessage.trim()) return;
+
+    setIsSubmittingContact(true);
+    setTimeout(() => {
+      setIsSubmittingContact(false);
+      setContactSubmitted(true);
+      triggerConfetti();
+    }, 600);
+  };
 
   const handleSelectPersonaAndEnter = (userId: string) => {
     switchUser(userId);
@@ -52,6 +83,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           <a href="#intelligence" className="hover:text-white transition-colors">Intelligence</a>
           <a href="#personas" className="hover:text-white transition-colors">Demo Personas</a>
           <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+          <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+          <a href="#contact" className="hover:text-white transition-colors">Contact</a>
         </nav>
 
         <div className="flex items-center space-x-3">
@@ -356,9 +389,295 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 px-4 border-t border-slate-900 text-center text-xs text-slate-500">
-        <p>© 2026 Chronicle SaaS Inc. All rights reserved. Personal Activity Intelligence System.</p>
+      {/* Frequently Asked Questions (FAQ) Section */}
+      <section id="faq" className="py-20 px-4 sm:px-6 max-w-4xl mx-auto border-t border-slate-900">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-xs font-semibold mb-3">
+            <HelpCircle size={13} />
+            <span>Answers & Details</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-2 text-sm text-slate-400">
+            Clear, honest answers about how Chronicle works, data sovereignty, and time intelligence.
+          </p>
+        </div>
+
+        <div className="space-y-3.5">
+          {[
+            {
+              q: 'How is Chronicle different from typical to-do lists or time-tracking widgets?',
+              a: 'A to-do list captures aspirational intentions—what you plan or wish to do. Chronicle records truth-of-day reality: what you actually accomplished, when, and for how long. Rather than functioning as a micromanaging stopwatch, Chronicle translates your raw daily activities into visual 24h daytime flows, 14-week consistency heatmaps, and automatic progress reports.',
+            },
+            {
+              q: 'Does the Deep Focus Timer notify me if my browser tab is minimized?',
+              a: 'Yes, 100%! Chronicle synthesizes a harmonic 3-tone chime (C5 → E5 → G5) using native Web Audio oscillators and triggers native operating system desktop push notification banners. You will be alerted the second your countdown concludes, even while working in other applications.',
+            },
+            {
+              q: 'Can I export my activity records to Notion, Obsidian, CSV, or raw JSON?',
+              a: 'Yes, anytime. Chronicle strictly believes in data sovereignty. You can generate one-click copyable Markdown tables specifically styled for Notion & Obsidian, download structured CSV files for Excel & Google Sheets, or export your complete encrypted JSON backup.',
+            },
+            {
+              q: 'How does automatic goal calculation work without manual spreadsheets?',
+              a: 'When you create a goal (e.g. "Log 15 hours of Deep Work every week"), Chronicle automatically queries your recorded activities in that timeframe. Every time you log an activity in that category, your goal progress bar, velocity, and streak update in real time.',
+            },
+            {
+              q: 'Is my activity and time data private and isolated?',
+              a: 'Your records are strictly scoped to your private account ID. Chronicle does not sell your productivity data, run invasive background keyloggers, or share your activities with third-party advertisers.',
+            },
+            {
+              q: 'Can I test Chronicle right now without entering a credit card?',
+              a: 'Absolutely. The Free Starter tier is free forever. In addition, you can test drive realistic pre-loaded demo personas (Senior Architect Alex Chen or Cognitive Neuroscientist Dr. Elena Rostova) with one click from this page.',
+            },
+            {
+              q: 'Can I customize categories, icons, and default session lengths?',
+              a: 'Yes! Chronicle allows you to create custom categories with custom hex colors, 24+ recognizable icons, and default durations (e.g. 25m, 45m, 60m) so logging feels completely tailored to your personal routine.',
+            },
+          ].map((item, idx) => {
+            const isOpen = openFaqIndex === idx;
+            return (
+              <div
+                key={idx}
+                className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden transition-all hover:border-slate-700/80"
+              >
+                <button
+                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                  className="w-full px-5 py-4 text-left flex items-center justify-between text-sm font-bold text-white focus:outline-none"
+                >
+                  <span className="pr-4">{item.q}</span>
+                  <span className={`p-1 rounded-lg bg-slate-800 text-slate-400 transition-transform ${isOpen ? 'rotate-180 text-emerald-400' : ''}`}>
+                    <ChevronDown size={16} />
+                  </span>
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/60">
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Contact Us Area */}
+      <section id="contact" className="py-20 px-4 sm:px-6 max-w-6xl mx-auto border-t border-slate-900">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-xs font-semibold mb-3">
+            <Mail size={13} />
+            <span>Direct Inquiries</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            Contact Chronicle Team
+          </h2>
+          <p className="mt-2 text-sm text-slate-400 max-w-xl mx-auto">
+            Have questions about personal tracking, team pilots, or custom workflows? We are here to help.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 bg-slate-900/40 border border-slate-800 rounded-3xl p-6 sm:p-10">
+          {/* Left Info Column */}
+          <div className="lg:col-span-2 space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-white mb-2">
+                We'd love to hear from you
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Whether you need dedicated onboarding, want to suggest an analytics visualization, or need enterprise invoicing, reach out directly.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <a
+                href="mailto:support@chronicleapp.io"
+                className="block p-3.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 transition-colors group"
+              >
+                <div className="flex items-center space-x-2.5 text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">
+                  <Mail size={16} className="text-emerald-500" />
+                  <span>Product & Engineering Support</span>
+                </div>
+                <p className="text-xs text-slate-400 font-mono mt-1">support@chronicleapp.io</p>
+              </a>
+
+              <a
+                href="mailto:sales@chronicleapp.io"
+                className="block p-3.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-teal-500/50 transition-colors group"
+              >
+                <div className="flex items-center space-x-2.5 text-xs font-bold text-white group-hover:text-teal-400 transition-colors">
+                  <Building size={16} className="text-teal-500" />
+                  <span>Enterprise & Pod Licenses</span>
+                </div>
+                <p className="text-xs text-slate-400 font-mono mt-1">sales@chronicleapp.io</p>
+              </a>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-800/40 space-y-1">
+              <div className="flex items-center space-x-2 text-xs font-bold text-emerald-400">
+                <Clock size={14} />
+                <span>Response Time SLA</span>
+              </div>
+              <p className="text-xs text-slate-400">
+                All inquiries answered by our core engineering team in under 2 hours during active hours.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">
+                Join Community & Connect
+              </h4>
+              <SocialIcons size="md" showLabels={true} />
+            </div>
+          </div>
+
+          {/* Right Interactive Form Column */}
+          <div className="lg:col-span-3">
+            {contactSubmitted ? (
+              <div className="h-full min-h-[320px] flex flex-col items-center justify-center text-center p-8 bg-slate-900/70 border border-slate-800 rounded-2xl space-y-4">
+                <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                  <CheckCircle2 size={30} />
+                </div>
+                <h4 className="text-xl font-bold text-white">Message Transmitted!</h4>
+                <p className="text-xs text-slate-400 max-w-sm">
+                  Thanks for reaching out! A Chronicle engineer has received your message and will respond to <strong className="text-emerald-400 font-mono">{contactEmail}</strong> promptly.
+                </p>
+                <button
+                  onClick={() => {
+                    setContactSubmitted(false);
+                    setContactMessage('');
+                  }}
+                  className="mt-2 px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-colors"
+                >
+                  Send Another Inquiry
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleContactSubmit} className="space-y-4 bg-slate-900/70 border border-slate-800 p-6 rounded-2xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Your Name <span className="text-emerald-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Alex Chen"
+                      value={contactName}
+                      onChange={e => setContactName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Your Email <span className="text-emerald-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="alex@company.com"
+                      value={contactEmail}
+                      onChange={e => setContactEmail(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Inquiry Topic
+                  </label>
+                  <select
+                    value={contactCategory}
+                    onChange={e => setContactCategory(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="general">General Question & Feedback</option>
+                    <option value="feature">Feature Request or Enhancement</option>
+                    <option value="enterprise">Enterprise Team & Pod Deployment</option>
+                    <option value="bug">Report a Bug / Technical Question</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Message <span className="text-emerald-500">*</span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    required
+                    placeholder="Tell us what you are looking to accomplish or how we can assist..."
+                    value={contactMessage}
+                    onChange={e => setContactMessage(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmittingContact}
+                  className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center space-x-2"
+                >
+                  {isSubmittingContact ? (
+                    <span>Transmitting message...</span>
+                  ) : (
+                    <>
+                      <Send size={14} />
+                      <span>Send Message to Engineering Team</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Rich Footer with Social Media */}
+      <footer className="py-12 px-4 sm:px-8 border-t border-slate-900 bg-slate-950/80">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+          <div className="md:col-span-2 space-y-3">
+            <div className="flex items-center space-x-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950">
+                <Zap size={16} className="fill-slate-950" />
+              </div>
+              <span className="font-extrabold text-base text-white">Chronicle</span>
+            </div>
+            <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
+              The professional personal activity tracking SaaS. Record what you truly did, uncover patterns, and master your time.
+            </p>
+            <div className="pt-2">
+              <SocialIcons size="md" />
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-3">Product</h4>
+            <ul className="space-y-2 text-xs text-slate-400">
+              <li><a href="#features" className="hover:text-emerald-400 transition-colors">Visual Daytime Flow</a></li>
+              <li><a href="#intelligence" className="hover:text-emerald-400 transition-colors">14-Week Heatmaps</a></li>
+              <li><a href="#pricing" className="hover:text-emerald-400 transition-colors">Pro & Team Plans</a></li>
+              <li><button onClick={() => handleSelectPersonaAndEnter('user_alex')} className="hover:text-emerald-400 transition-colors text-left">Live App Demo</button></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-3">Support & Legal</h4>
+            <ul className="space-y-2 text-xs text-slate-400">
+              <li><a href="#faq" className="hover:text-emerald-400 transition-colors">Frequently Asked Questions</a></li>
+              <li><a href="#contact" className="hover:text-emerald-400 transition-colors">Contact Support</a></li>
+              <li><a href="https://github.com/benisson-beep/activity_tracker2" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">GitHub Repository</a></li>
+              <li><span className="text-slate-500">Data Sovereignty & Privacy</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
+          <p>© 2026 Chronicle SaaS Inc. All rights reserved. Truth-of-Day Activity Intelligence.</p>
+          <p className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+            <span>All Systems Operational</span>
+          </p>
+        </div>
       </footer>
     </div>
   );

@@ -14,11 +14,14 @@ import {
   ChevronRight, 
   Zap,
   HelpCircle,
+  LogOut,
+  Mail,
   X
 } from 'lucide-react';
 import { ViewMode } from '../../types';
 import { useActivity } from '../../context/ActivityContext';
 import { useAuth } from '../../context/AuthContext';
+import { SocialIcons } from '../common/SocialIcons';
 
 interface SidebarProps {
   currentView: ViewMode;
@@ -28,6 +31,8 @@ interface SidebarProps {
   isMobileOpen: boolean;
   onCloseMobile: () => void;
   onOpenHelp: () => void;
+  onLogout?: () => void;
+  onOpenContact?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -38,6 +43,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen,
   onCloseMobile,
   onOpenHelp,
+  onLogout,
+  onOpenContact,
 }) => {
   const { openCreateActivityModal, timerState, categories, activities } = useActivity();
   const { currentUser } = useAuth();
@@ -181,27 +188,68 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
-      {/* User Card in Footer */}
-      <div className="p-3 border-t border-slate-800/80 space-y-2">
-        {(!isCollapsed || isMobileOpen) && (
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center space-x-2 truncate">
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className="w-6 h-6 rounded-full object-cover ring-1 ring-emerald-500/40"
-              />
-              <div className="truncate">
-                <p className="text-[11px] font-semibold text-slate-300 truncate">{currentUser.name}</p>
-                <p className="text-[9px] text-emerald-400 font-mono uppercase">{currentUser.plan} TIER</p>
+      {/* User Card & Actions in Footer */}
+      <div className="p-3 border-t border-slate-800/80 space-y-2.5">
+        {(!isCollapsed || isMobileOpen) ? (
+          <>
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center space-x-2 truncate">
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser.name}
+                  className="w-6 h-6 rounded-full object-cover ring-1 ring-emerald-500/40"
+                />
+                <div className="truncate">
+                  <p className="text-[11px] font-semibold text-slate-300 truncate">{currentUser.name}</p>
+                  <p className="text-[9px] text-emerald-400 font-mono uppercase">{currentUser.plan} TIER</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-1">
+                <button 
+                  onClick={onOpenHelp}
+                  className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                  title="Ask for Help & FAQs (?)"
+                >
+                  <HelpCircle size={14} />
+                </button>
+                <button 
+                  onClick={onOpenContact}
+                  className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                  title="Contact Support Team"
+                >
+                  <Mail size={14} />
+                </button>
+                <button 
+                  onClick={onLogout}
+                  className="text-rose-400/80 hover:text-rose-300 p-1 rounded-lg hover:bg-rose-950/40 transition-colors"
+                  title="Sign Out / Log Out"
+                >
+                  <LogOut size={14} />
+                </button>
               </div>
             </div>
+
+            {/* Social media mini row */}
+            <div className="px-1 pt-1.5 border-t border-slate-800/50 flex items-center justify-between">
+              <span className="text-[9px] font-medium text-slate-500 uppercase tracking-wider">Connect</span>
+              <SocialIcons size="sm" />
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center space-y-2">
             <button 
               onClick={onOpenHelp}
-              className="text-slate-400 hover:text-slate-200 p-1"
-              title="Keyboard Shortcuts & Help (?)"
+              className="text-slate-400 hover:text-slate-200 p-2 rounded-xl hover:bg-slate-800 transition-colors"
+              title="Ask for Help & FAQs (?)"
             >
-              <HelpCircle size={14} />
+              <HelpCircle size={16} />
+            </button>
+            <button 
+              onClick={onLogout}
+              className="text-rose-400 hover:text-rose-300 p-2 rounded-xl hover:bg-rose-950/40 transition-colors"
+              title="Sign Out / Log Out"
+            >
+              <LogOut size={16} />
             </button>
           </div>
         )}

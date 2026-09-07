@@ -15,7 +15,10 @@ import {
   Sun, 
   User, 
   X,
-  Sparkles
+  Sparkles,
+  HelpCircle,
+  Mail,
+  LogOut
 } from 'lucide-react';
 import { ViewMode } from '../../types';
 import { useActivity } from '../../context/ActivityContext';
@@ -25,9 +28,17 @@ import { useTheme } from '../../context/ThemeContext';
 interface CommandPaletteProps {
   currentView: ViewMode;
   onNavigate: (view: ViewMode) => void;
+  onLogout?: () => void;
+  onOpenHelp?: () => void;
+  onOpenContact?: () => void;
 }
 
-export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate }) => {
+export const CommandPalette: React.FC<CommandPaletteProps> = ({ 
+  onNavigate,
+  onLogout,
+  onOpenHelp,
+  onOpenContact
+}) => {
   const { isCommandPaletteOpen, setCommandPaletteOpen, openCreateActivityModal, startTimer, categories } = useActivity();
   const { users, currentUser, switchUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -106,6 +117,30 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate }) =>
       icon: theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-indigo-400" />, 
       category: 'Preferences', 
       action: () => toggleTheme() 
+    },
+    { 
+      id: 'act-help', 
+      title: 'Ask for Help & FAQs', 
+      subtitle: 'Shortcut: ?',
+      icon: <HelpCircle size={16} className="text-emerald-500" />, 
+      category: 'Actions', 
+      action: () => onOpenHelp?.() 
+    },
+    { 
+      id: 'act-contact', 
+      title: 'Contact Chronicle Support Team', 
+      subtitle: 'Send direct support ticket or question',
+      icon: <Mail size={16} className="text-teal-500" />, 
+      category: 'Actions', 
+      action: () => onOpenContact?.() 
+    },
+    { 
+      id: 'act-logout', 
+      title: 'Sign Out / Log Out', 
+      subtitle: 'Switch to landing page',
+      icon: <LogOut size={16} className="text-rose-500" />, 
+      category: 'Actions', 
+      action: () => onLogout?.() 
     },
   ];
 

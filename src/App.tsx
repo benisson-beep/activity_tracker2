@@ -12,6 +12,7 @@ import { CommandPalette } from './components/layout/CommandPalette';
 import { ActivityModal } from './components/activity/ActivityModal';
 import { OnboardingModal } from './components/onboarding/OnboardingModal';
 import { HelpModal } from './components/common/HelpModal';
+import { ContactModal } from './components/contact/ContactModal';
 import { ToastContainer } from './components/common/ToastContainer';
 import { LandingPage } from './components/landing/LandingPage';
 
@@ -27,14 +28,21 @@ import { TimerView } from './components/timer/TimerView';
 import { PricingView } from './components/pricing/PricingView';
 
 const MainAppContent: React.FC = () => {
-  const { preferences, openCreateActivityModal } = useActivity();
-  const { currentUser } = useAuth();
+  const { preferences, openCreateActivityModal, showToast } = useActivity();
+  const { currentUser, logoutUser } = useAuth();
 
   const [currentView, setCurrentView] = useState<ViewMode>(preferences.defaultView || 'dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(false);
+
+  const handleLogout = () => {
+    logoutUser();
+    setShowLandingPage(true);
+    showToast('You have been logged out.');
+  };
 
   // Global Keyboard Shortcuts (1-7 for tabs, N for new activity)
   useEffect(() => {
@@ -81,6 +89,8 @@ const MainAppContent: React.FC = () => {
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
         onOpenHelp={() => setIsHelpOpen(true)}
+        onLogout={handleLogout}
+        onOpenContact={() => setIsContactModalOpen(true)}
       />
 
       {/* Main Workspace Area */}
@@ -90,6 +100,9 @@ const MainAppContent: React.FC = () => {
           currentView={currentView}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           onNavigate={setCurrentView}
+          onLogout={handleLogout}
+          onOpenHelp={() => setIsHelpOpen(true)}
+          onOpenContact={() => setIsContactModalOpen(true)}
         />
 
         {/* View Switcher Banner (allows easy toggle back to Marketing Landing Page) */}
@@ -100,12 +113,20 @@ const MainAppContent: React.FC = () => {
               Workspace: <strong className="text-slate-200">{currentUser.name}</strong> ({currentUser.role})
             </span>
           </div>
-          <button
-            onClick={() => setShowLandingPage(true)}
-            className="text-emerald-400 hover:text-emerald-300 font-semibold hover:underline flex-shrink-0"
-          >
-            View Marketing Landing Page →
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setIsContactModalOpen(true)}
+              className="text-slate-400 hover:text-slate-200 hidden sm:inline"
+            >
+              Contact Support
+            </button>
+            <button
+              onClick={() => setShowLandingPage(true)}
+              className="text-emerald-400 hover:text-emerald-300 font-semibold hover:underline flex-shrink-0"
+            >
+              Marketing Landing Page →
+            </button>
+          </div>
         </div>
 
         {/* Scrollable View Content Body */}
@@ -118,7 +139,12 @@ const MainAppContent: React.FC = () => {
           {currentView === 'reports' && <ReportsView />}
           {currentView === 'timer' && <TimerView />}
           {currentView === 'pricing' && <PricingView />}
-          {currentView === 'settings' && <SettingsView />}
+          {currentView === 'settings' && (
+            <SettingsView 
+              onLogout={handleLogout} 
+              onOpenContact={() => setIsContactModalOpen(true)} 
+            />
+          )}
         </main>
 
         {/* Mobile Bottom Navigation Bar */}
@@ -129,11 +155,37 @@ const MainAppContent: React.FC = () => {
         />
       </div>
 
+      {/* Floating Ask for Help Button */}
+      <button
+        onClick={() => setIsHelpOpen(true)}
+        className="no-print fixed bottom-16 lg:bottom-6 right-4 sm:right-6 z-30 px-3 py-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-xl hover:shadow-2xl hover:border-emerald-500/60 hover:text-emerald-500 transition-all flex items-center space-x-2 group"
+        title="Ask for Help, FAQs & Shortcuts (?)"
+      >
+        <div className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-slate-950 transition-colors font-bold text-xs">
+          ?
+        </div>
+        <span className="hidden sm:inline text-xs font-bold">Ask for Help</span>
+      </button>
+
       {/* Global Overlays & Modals */}
-      <CommandPalette currentView={currentView} onNavigate={setCurrentView} />
+      <CommandPalette 
+        currentView={currentView} 
+        onNavigate={setCurrentView} 
+        onLogout={handleLogout}
+        onOpenHelp={() => setIsHelpOpen(true)}
+        onOpenContact={() => setIsContactModalOpen(true)}
+      />
       <ActivityModal />
       <OnboardingModal />
-      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <HelpModal 
+        isOpen={isHelpOpen} 
+        onClose={() => setIsHelpOpen(false)} 
+        onOpenContact={() => setIsContactModalOpen(true)}
+      />
+      <ContactModal 
+        isOpen={isContactModalOpen} 
+        onClose={() => setIsContactModalOpen(false)} 
+      />
       <ToastContainer />
     </div>
   );

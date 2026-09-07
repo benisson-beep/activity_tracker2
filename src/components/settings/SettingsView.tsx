@@ -16,6 +16,8 @@ import {
   Sliders,
   Bell,
   Volume2,
+  LogOut,
+  Mail,
   X
 } from 'lucide-react';
 import { useActivity } from '../../context/ActivityContext';
@@ -28,7 +30,12 @@ import { playSessionCompleteChime, requestNotificationPermission, sendFocusCompl
 
 type SettingsTab = 'categories' | 'preferences' | 'subscription' | 'data';
 
-export const SettingsView: React.FC = () => {
+interface SettingsViewProps {
+  onLogout?: () => void;
+  onOpenContact?: () => void;
+}
+
+export const SettingsView: React.FC<SettingsViewProps> = ({ onLogout, onOpenContact }) => {
   const { 
     categories, 
     addCategory, 
@@ -587,6 +594,36 @@ export const SettingsView: React.FC = () => {
                 <RotateCcw size={14} />
                 <span>Reset Data</span>
               </button>
+            </div>
+
+            {/* Account Session & Logout */}
+            <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                  Active User Session ({currentUser.name})
+                </h4>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Sign out of this workspace and return to the marketing landing page
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={onOpenContact}
+                  className="px-3 py-2 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 text-xs font-semibold flex items-center space-x-1.5 transition-colors"
+                >
+                  <Mail size={13} />
+                  <span>Contact Support</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center space-x-1.5 shadow-xs transition-colors"
+                >
+                  <LogOut size={13} />
+                  <span>Log Out</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

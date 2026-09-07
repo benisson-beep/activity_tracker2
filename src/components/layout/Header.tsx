@@ -14,7 +14,9 @@ import {
   UserPlus, 
   ShieldCheck, 
   LogOut,
-  Sparkles
+  Sparkles,
+  HelpCircle,
+  Mail
 } from 'lucide-react';
 import { ViewMode } from '../../types';
 import { useActivity } from '../../context/ActivityContext';
@@ -25,9 +27,19 @@ interface HeaderProps {
   currentView: ViewMode;
   onOpenMobileMenu: () => void;
   onNavigate: (view: ViewMode) => void;
+  onLogout?: () => void;
+  onOpenHelp?: () => void;
+  onOpenContact?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentView, onOpenMobileMenu, onNavigate }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  currentView, 
+  onOpenMobileMenu, 
+  onNavigate,
+  onLogout,
+  onOpenHelp,
+  onOpenContact
+}) => {
   const { 
     openCreateActivityModal, 
     setCommandPaletteOpen, 
@@ -175,6 +187,16 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onOpenMobileMenu, o
           <span className="hidden sm:inline">Log Activity</span>
         </button>
 
+        {/* Ask for Help Button */}
+        <button
+          onClick={onOpenHelp}
+          className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors hidden sm:flex items-center space-x-1"
+          title="Ask for Help, FAQs & Shortcuts (?)"
+        >
+          <HelpCircle size={16} />
+          <span className="hidden lg:inline text-xs font-medium">Help</span>
+        </button>
+
         {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
@@ -247,8 +269,8 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onOpenMobileMenu, o
                 ))}
               </div>
 
-              {/* Settings and Plan Links */}
-              <div className="pt-1">
+              {/* Settings, Help, Contact, and Logout Links */}
+              <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
                 <button
                   onClick={() => {
                     onNavigate('settings');
@@ -258,6 +280,39 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onOpenMobileMenu, o
                 >
                   <ShieldCheck size={14} className="text-slate-400" />
                   <span>Subscription & Limits</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    onOpenHelp?.();
+                  }}
+                  className="w-full px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center space-x-2"
+                >
+                  <HelpCircle size={14} className="text-emerald-500" />
+                  <span>Ask for Help & FAQs</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    onOpenContact?.();
+                  }}
+                  className="w-full px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center space-x-2"
+                >
+                  <Mail size={14} className="text-teal-500" />
+                  <span>Contact Support Team</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    onLogout?.();
+                  }}
+                  className="w-full px-4 py-2 text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center space-x-2 transition-colors border-t border-slate-100 dark:border-slate-800/60 mt-1"
+                >
+                  <LogOut size={14} />
+                  <span>Sign Out / Log Out</span>
                 </button>
               </div>
             </div>
