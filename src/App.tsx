@@ -23,6 +23,8 @@ import { AnalyticsView } from './components/analytics/AnalyticsView';
 import { GoalsView } from './components/goals/GoalsView';
 import { ReportsView } from './components/reports/ReportsView';
 import { SettingsView } from './components/settings/SettingsView';
+import { TimerView } from './components/timer/TimerView';
+import { PricingView } from './components/pricing/PricingView';
 
 const MainAppContent: React.FC = () => {
   const { preferences, openCreateActivityModal } = useActivity();
@@ -49,6 +51,8 @@ const MainAppContent: React.FC = () => {
       else if (e.key === '5') setCurrentView('goals');
       else if (e.key === '6') setCurrentView('reports');
       else if (e.key === '7') setCurrentView('settings');
+      else if (e.key === 't' || e.key === 'T') setCurrentView('timer');
+      else if (e.key === 'p' || e.key === 'P') setCurrentView('pricing');
       else if (e.key === 'n' || e.key === 'N') {
         e.preventDefault();
         openCreateActivityModal();
@@ -112,6 +116,8 @@ const MainAppContent: React.FC = () => {
           {currentView === 'analytics' && <AnalyticsView />}
           {currentView === 'goals' && <GoalsView />}
           {currentView === 'reports' && <ReportsView />}
+          {currentView === 'timer' && <TimerView />}
+          {currentView === 'pricing' && <PricingView />}
           {currentView === 'settings' && <SettingsView />}
         </main>
 

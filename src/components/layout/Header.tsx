@@ -35,7 +35,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onOpenMobileMenu, o
     pauseTimer, 
     resumeTimer, 
     stopTimerAndSave, 
-    discardTimer 
+    resetTimer 
   } = useActivity();
   const { currentUser, users, switchUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -71,6 +71,8 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onOpenMobileMenu, o
     analytics: { title: 'Time Intelligence', subtitle: 'Real patterns, consistency, and focus metrics' },
     goals: { title: 'Goals & Milestones', subtitle: 'Real-time progress tied directly to recorded activities' },
     reports: { title: 'Executive Reports', subtitle: 'Daily debriefs, weekly summaries, and exports' },
+    timer: { title: 'Deep Focus Timer', subtitle: 'Countdown focus intervals, stopwatches, and chime alerts' },
+    pricing: { title: 'Plans & Pricing', subtitle: 'Simple, transparent pricing for individuals and teams' },
     settings: { title: 'System Settings', subtitle: 'Manage custom categories, preferences, and plans' },
   };
 
@@ -112,10 +114,16 @@ export const Header: React.FC<HeaderProps> = ({ currentView, onOpenMobileMenu, o
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="font-mono">{formatTimerSeconds(timerState.elapsedSeconds)}</span>
-            <span className="hidden sm:inline text-slate-600 dark:text-slate-300 max-w-[120px] truncate">
-              {timerState.title || 'Tracking...'}
-            </span>
+            <button 
+              onClick={() => onNavigate('timer')} 
+              className="flex items-center space-x-1.5 hover:underline focus:outline-none"
+              title="Open Focus Timer"
+            >
+              <span className="font-mono">{formatTimerSeconds(timerState.elapsedSeconds)}</span>
+              <span className="hidden sm:inline text-slate-600 dark:text-slate-300 max-w-[120px] truncate">
+                {timerState.title || 'Tracking...'}
+              </span>
+            </button>
             <div className="flex items-center space-x-1 pl-1 border-l border-emerald-500/20">
               {timerState.isRunning ? (
                 <button

@@ -3,15 +3,15 @@ import {
   LayoutDashboard, 
   ListFilter, 
   Calendar, 
+  Timer,
   BarChart3, 
   Target, 
   FileSpreadsheet, 
+  ShieldCheck,
   Settings, 
-  Timer, 
   Plus, 
   ChevronLeft, 
   ChevronRight, 
-  Sparkles,
   Zap,
   HelpCircle,
   X
@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
   onOpenHelp,
 }) => {
-  const { openCreateActivityModal, startTimer, categories, activities } = useActivity();
+  const { openCreateActivityModal, timerState, categories, activities } = useActivity();
   const { currentUser } = useAuth();
 
   const navItems: Array<{
@@ -52,9 +52,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} />, shortcut: '1' },
     { id: 'activities', label: 'Activities', icon: <ListFilter size={18} />, shortcut: '2', badge: activities.length },
     { id: 'calendar', label: 'Calendar', icon: <Calendar size={18} />, shortcut: '3' },
+    { id: 'timer', label: 'Focus Timer', icon: <Timer size={18} />, shortcut: 'T', badge: timerState.isRunning ? '●' : undefined },
     { id: 'analytics', label: 'Analytics', icon: <BarChart3 size={18} />, shortcut: '4' },
     { id: 'goals', label: 'Goals', icon: <Target size={18} />, shortcut: '5' },
     { id: 'reports', label: 'Reports', icon: <FileSpreadsheet size={18} />, shortcut: '6' },
+    { id: 'pricing', label: 'Pricing', icon: <ShieldCheck size={18} />, shortcut: 'P' },
     { id: 'settings', label: 'Settings', icon: <Settings size={18} />, shortcut: '7' },
   ];
 
@@ -135,14 +137,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation List */}
-      <nav className="flex-1 px-2.5 py-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-2.5 py-1 space-y-1 overflow-y-auto">
         {navItems.map(item => {
           const isActive = currentView === item.id;
           return (
             <button
               key={item.id}
               onClick={() => handleNavClick(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group ${
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group ${
                 isActive
                   ? 'bg-emerald-600/15 text-emerald-400 border border-emerald-500/20 shadow-sm'
                   : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80 border border-transparent'
@@ -161,7 +163,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {(!isCollapsed || isMobileOpen) && (
                 <div className="flex items-center space-x-1.5 ml-2">
                   {item.badge !== undefined && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400 font-mono">
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      item.id === 'timer' && timerState.isRunning
+                        ? 'bg-emerald-500 text-slate-950 font-bold animate-pulse'
+                        : 'bg-slate-800 text-slate-400'
+                    }`}>
                       {item.badge}
                     </span>
                   )}
@@ -175,42 +181,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
-      {/* Quick Timer Launcher & User Card in Footer */}
+      {/* User Card in Footer */}
       <div className="p-3 border-t border-slate-800/80 space-y-2">
-        {(!isCollapsed || isMobileOpen) ? (
-          <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
-            <div className="flex items-center space-x-2.5 truncate">
-              <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
-                <Timer size={14} />
-              </div>
-              <div className="truncate">
-                <p className="text-[11px] font-semibold text-slate-200 truncate">Stopwatch Timer</p>
-                <p className="text-[9px] text-slate-500 truncate">Instant focus tracking</p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                startTimer('Focus Session', categories[0]?.id || '');
-                onCloseMobile();
-              }}
-              className="px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-semibold transition-colors"
-            >
-              Start
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => startTimer('Focus Session', categories[0]?.id || '')}
-            className="w-full h-9 flex items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-800 text-indigo-400 transition-colors"
-            title="Start Stopwatch"
-          >
-            <Timer size={16} />
-          </button>
-        )}
-
-        {/* User Card */}
         {(!isCollapsed || isMobileOpen) && (
-          <div className="pt-2 flex items-center justify-between px-1">
+          <div className="flex items-center justify-between px-1">
             <div className="flex items-center space-x-2 truncate">
               <img
                 src={currentUser.avatar}
@@ -225,7 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button 
               onClick={onOpenHelp}
               className="text-slate-400 hover:text-slate-200 p-1"
-              title="Keyboard Shortcuts & Guidance"
+              title="Keyboard Shortcuts & Help (?)"
             >
               <HelpCircle size={14} />
             </button>
@@ -237,7 +211,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Desktop Persistent Sidebar */}
       <aside 
         className={`hidden lg:block h-screen sticky top-0 transition-all duration-200 z-40 ${
           isCollapsed ? 'w-20' : 'w-64'
@@ -246,7 +219,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {sidebarContent}
       </aside>
 
-      {/* Mobile Drawer Backdrop */}
       {isMobileOpen && (
         <div 
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity"

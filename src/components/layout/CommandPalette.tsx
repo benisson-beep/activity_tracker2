@@ -10,6 +10,7 @@ import {
   Settings, 
   Plus, 
   Timer, 
+  CreditCard,
   Moon, 
   Sun, 
   User, 
@@ -73,11 +74,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onNavigate }) =>
   const items: CommandItem[] = [
     // Navigation
     { id: 'nav-dash', title: 'Go to Dashboard', icon: <LayoutDashboard size={16} />, category: 'Navigation', action: () => onNavigate('dashboard') },
+    { id: 'nav-timer', title: 'Go to Focus Timer', subtitle: 'Countdown presets, stopwatch, audio chimes', icon: <Timer size={16} className="text-emerald-500" />, category: 'Navigation', action: () => onNavigate('timer') },
     { id: 'nav-acts', title: 'Go to Activity History', icon: <ListFilter size={16} />, category: 'Navigation', action: () => onNavigate('activities') },
     { id: 'nav-cal', title: 'Go to Calendar', icon: <CalendarIcon size={16} />, category: 'Navigation', action: () => onNavigate('calendar') },
     { id: 'nav-ana', title: 'Go to Analytics & Intelligence', icon: <BarChart3 size={16} />, category: 'Navigation', action: () => onNavigate('analytics') },
     { id: 'nav-goals', title: 'Go to Goals & Progress', icon: <Target size={16} />, category: 'Navigation', action: () => onNavigate('goals') },
     { id: 'nav-rep', title: 'Go to Reports & Exports', icon: <FileSpreadsheet size={16} />, category: 'Navigation', action: () => onNavigate('reports') },
+    { id: 'nav-pricing', title: 'Go to Plans & Pricing', subtitle: 'Compare Free, Pro, and Enterprise tiers', icon: <CreditCard size={16} className="text-amber-500" />, category: 'Navigation', action: () => onNavigate('pricing') },
     { id: 'nav-set', title: 'Go to Settings', icon: <Settings size={16} />, category: 'Navigation', action: () => onNavigate('settings') },
     
     // Actions

@@ -2,9 +2,11 @@ export type ViewMode =
   | 'dashboard' 
   | 'activities' 
   | 'calendar' 
+  | 'timer'
   | 'analytics' 
   | 'goals' 
   | 'reports' 
+  | 'pricing'
   | 'settings';
 
 export type ActivityStatus = 'completed' | 'in-progress' | 'paused';
@@ -55,9 +57,9 @@ export interface Goal {
   id: string;
   userId: string;
   title: string;
-  categoryId?: string; // Optional: specific category, or all categories if undefined
+  categoryId?: string;
   targetType: GoalTargetType;
-  targetValue: number; // in hours (if 'hours') or count (if 'count')
+  targetValue: number;
   period: GoalPeriod;
   color: string;
   createdAt: string;
@@ -68,13 +70,20 @@ export interface UserPreferences {
   startWeekOnMonday: boolean;
   defaultView: ViewMode;
   soundEffects: boolean;
+  enableDesktopNotification?: boolean;
+  enableSoundNotification?: boolean;
   theme: 'dark' | 'light' | 'system';
 }
 
+export type TimerMode = 'stopwatch' | 'countdown';
+
 export interface ActiveTimerState {
   isRunning: boolean;
+  mode: TimerMode;
   startTime: number | null; // epoch timestamp
   elapsedSeconds: number;
+  targetMinutes: number; // For countdown (e.g., 25, 45, 60)
+  hasFinishedCountdown: boolean;
   title: string;
   categoryId: string;
   notes?: string;

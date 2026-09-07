@@ -2,8 +2,7 @@ import React from 'react';
 import { 
   LayoutDashboard, 
   ListFilter, 
-  Calendar, 
-  BarChart3, 
+  Timer, 
   Plus, 
   MoreHorizontal 
 } from 'lucide-react';
@@ -17,7 +16,7 @@ interface MobileNavProps {
 }
 
 export const MobileNav: React.FC<MobileNavProps> = ({ currentView, onNavigate, onOpenMenu }) => {
-  const { openCreateActivityModal } = useActivity();
+  const { openCreateActivityModal, timerState } = useActivity();
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-3 py-2 flex items-center justify-around shadow-lg safe-area-bottom">
@@ -58,30 +57,31 @@ export const MobileNav: React.FC<MobileNavProps> = ({ currentView, onNavigate, o
         </button>
       </div>
 
-      {/* Calendar */}
+      {/* Focus Timer */}
       <button
-        onClick={() => onNavigate('calendar')}
-        className={`flex flex-col items-center justify-center p-1 rounded-lg transition-colors ${
-          currentView === 'calendar'
+        onClick={() => onNavigate('timer')}
+        className={`relative flex flex-col items-center justify-center p-1 rounded-lg transition-colors ${
+          currentView === 'timer'
             ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
             : 'text-slate-500 dark:text-slate-400'
         }`}
       >
-        <Calendar size={19} />
-        <span className="text-[10px] mt-0.5">Calendar</span>
+        <div className="relative">
+          <Timer size={19} />
+          {(timerState.isRunning || timerState.elapsedSeconds > 0) && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          )}
+        </div>
+        <span className="text-[10px] mt-0.5">Focus</span>
       </button>
 
-      {/* Analytics / Menu */}
+      {/* More / Menu Drawer */}
       <button
-        onClick={() => onNavigate('analytics')}
-        className={`flex flex-col items-center justify-center p-1 rounded-lg transition-colors ${
-          currentView === 'analytics'
-            ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-            : 'text-slate-500 dark:text-slate-400'
-        }`}
+        onClick={onOpenMenu}
+        className="flex flex-col items-center justify-center p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
       >
-        <BarChart3 size={19} />
-        <span className="text-[10px] mt-0.5">Analytics</span>
+        <MoreHorizontal size={19} />
+        <span className="text-[10px] mt-0.5">Menu</span>
       </button>
     </div>
   );

@@ -12,6 +12,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   const shortcuts = [
     { key: '⌘K / Ctrl+K', desc: 'Open Command Palette from anywhere' },
     { key: 'N', desc: 'Quickly record a new activity' },
+    { key: 'T', desc: 'Jump to Deep Focus Timer' },
+    { key: 'P', desc: 'Jump to Plans & Pricing' },
     { key: '1', desc: 'Jump to Dashboard' },
     { key: '2', desc: 'Jump to Activity Stream' },
     { key: '3', desc: 'Jump to Calendar' },

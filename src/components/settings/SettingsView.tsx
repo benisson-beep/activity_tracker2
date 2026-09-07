@@ -14,6 +14,8 @@ import {
   Sparkles,
   Zap,
   Sliders,
+  Bell,
+  Volume2,
   X
 } from 'lucide-react';
 import { useActivity } from '../../context/ActivityContext';
@@ -22,6 +24,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { Category, PlanTier } from '../../types';
 import { CategoryIcon, AVAILABLE_ICONS, PRESET_COLORS } from '../common/CategoryIcon';
 import { storage } from '../../lib/storage';
+import { playSessionCompleteChime, requestNotificationPermission, sendFocusCompleteNotification } from '../../lib/notification';
 
 type SettingsTab = 'categories' | 'preferences' | 'subscription' | 'data';
 
@@ -296,26 +299,92 @@ export const SettingsView: React.FC = () => {
               </button>
             </div>
 
-            {/* Sound effects */}
+            {/* Micro-interactions & Sounds */}
             <div className="pt-4 flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                  Micro-interactions & Sounds
+                  Focus Completion Chime
                 </span>
                 <span className="text-xs text-slate-500">
-                  Play subtle audio feedback on timer events
+                  Play harmonic 3-tone audio chord when countdown sessions finish
                 </span>
               </div>
-              <button
-                onClick={() => updatePreferences({ soundEffects: !preferences.soundEffects })}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${
-                  preferences.soundEffects
-                    ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                }`}
-              >
-                {preferences.soundEffects ? 'Enabled' : 'Muted'}
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => playSessionCompleteChime()}
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-medium flex items-center space-x-1"
+                  title="Test Sound Chime"
+                >
+                  <Volume2 size={13} />
+                  <span>Test</span>
+                </button>
+                <button
+                  onClick={() => updatePreferences({ enableSoundNotification: preferences.enableSoundNotification !== false ? false : true })}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${
+                    preferences.enableSoundNotification !== false
+                      ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                  }`}
+                >
+                  {preferences.enableSoundNotification !== false ? 'Enabled' : 'Muted'}
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop Push Notifications */}
+            <div className="pt-4 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                  Desktop Push Notifications
+                </span>
+                <span className="text-xs text-slate-500">
+                  Trigger native OS alert banner when focus intervals conclude
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const granted = await requestNotificationPermission();
+                    if (granted) {
+                      updatePreferences({ enableDesktopNotification: true });
+                      sendFocusCompleteNotification('Focus Session Concluded', 'Great job! Your notification test was successful.');
+                    } else {
+                      showToast('Notification permission denied or blocked in browser settings.', 'error');
+                    }
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-medium flex items-center space-x-1"
+                  title="Request & Test Desktop Permission"
+                >
+                  <Bell size={13} />
+                  <span>Test Alert</span>
+                </button>
+                <button
+                  onClick={async () => {
+                    const nextVal = !preferences.enableDesktopNotification;
+                    if (nextVal) {
+                      const granted = await requestNotificationPermission();
+                      if (granted) {
+                        updatePreferences({ enableDesktopNotification: true });
+                        showToast('Desktop notifications enabled!');
+                      } else {
+                        showToast('Browser blocked desktop notifications. Check your browser settings.', 'error');
+                      }
+                    } else {
+                      updatePreferences({ enableDesktopNotification: false });
+                      showToast('Desktop notifications disabled.');
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${
+                    preferences.enableDesktopNotification
+                      ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                  }`}
+                >
+                  {preferences.enableDesktopNotification ? 'Active' : 'Disabled'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

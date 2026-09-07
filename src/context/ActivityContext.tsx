@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { Activity, Category, Goal, UserPreferences, ActiveTimerState } from '../types';
+import { Activity, Category, Goal, UserPreferences, ActiveTimerState, TimerMode } from '../types';
 import { useAuth } from './AuthContext';
 import { storage } from '../lib/storage';
-import { getCurrentTimeString, addMinutesToTime, getTodayString } from '../lib/dateUtils';
+import { getCurrentTimeString, getTodayString } from '../lib/dateUtils';
 import { triggerConfetti } from '../lib/confetti';
+import { playSessionCompleteChime, sendFocusCompleteNotification } from '../lib/notification';
 
 interface Toast {
   id: string;
@@ -36,13 +37,18 @@ interface ActivityContextType {
   // Preferences
   updatePreferences: (prefs: Partial<UserPreferences>) => void;
   
-  // Active Stopwatch Timer
+  // Active Timer
   timerState: ActiveTimerState;
-  startTimer: (title: string, categoryId: string, notes?: string, tags?: string[]) => void;
+  startTimer: (title?: string, categoryId?: string, notes?: string, tags?: string[], mode?: TimerMode, targetMinutes?: number) => void;
+  toggleTimer: () => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
-  discardTimer: () => void;
+  resetTimer: () => void;
   stopTimerAndSave: () => void;
+  setTimerMode: (mode: TimerMode) => void;
+  setTargetMinutes: (minutes: number) => void;
+  setTimerTitle: (title: string) => void;
+  setTimerCategory: (categoryId: string) => void;
 
   // Modals & UI States
   isActivityModalOpen: boolean;
@@ -68,8 +74,11 @@ const ActivityContext = createContext<ActivityContextType | undefined>(undefined
 
 const INITIAL_TIMER: ActiveTimerState = {
   isRunning: false,
+  mode: 'countdown',
   startTime: null,
   elapsedSeconds: 0,
+  targetMinutes: 25,
+  hasFinishedCountdown: false,
   title: '',
   categoryId: '',
   notes: '',
@@ -100,7 +109,6 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // If it was running, compute passed seconds
         if (parsed.isRunning && parsed.startTime) {
           const addedSec = Math.floor((Date.now() - parsed.startTime) / 1000);
           return {
@@ -109,7 +117,7 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             startTime: Date.now(),
           };
         }
-        return parsed;
+        return { ...INITIAL_TIMER, ...parsed };
       } catch (e) {
         console.error('Failed to parse timer state', e);
       }
@@ -130,24 +138,6 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem(`chronicle_${userId}_timer`, JSON.stringify(timerState));
   }, [timerState, userId]);
 
-  // Timer interval ticker
-  const timerRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (timerState.isRunning) {
-      timerRef.current = window.setInterval(() => {
-        setTimerState(prev => ({
-          ...prev,
-          elapsedSeconds: prev.elapsedSeconds + 1,
-        }));
-      }, 1000);
-    } else if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [timerState.isRunning]);
-
   // Toast helper
   const showToast = useCallback((message: string, type: 'success' | 'info' | 'error' = 'success') => {
     const id = `toast_${Date.now()}_${Math.random()}`;
@@ -160,6 +150,52 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const dismissToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
+
+  // Timer interval ticker
+  const timerRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (timerState.isRunning) {
+      timerRef.current = window.setInterval(() => {
+        setTimerState(prev => {
+          const newElapsed = prev.elapsedSeconds + 1;
+
+          // Check if countdown target reached
+          if (prev.mode === 'countdown' && !prev.hasFinishedCountdown) {
+            const targetSec = prev.targetMinutes * 60;
+            if (newElapsed >= targetSec) {
+              // Trigger notification & chime
+              if (preferences.enableSoundNotification !== false) {
+                playSessionCompleteChime();
+              }
+              if (preferences.enableDesktopNotification !== false) {
+                sendFocusCompleteNotification(prev.title || 'Focus Session', prev.targetMinutes);
+              }
+              triggerConfetti();
+              showToast(`🎯 Focus session of ${prev.targetMinutes}m complete! Click "Save to History" to log it.`);
+
+              return {
+                ...prev,
+                isRunning: false,
+                startTime: null,
+                elapsedSeconds: targetSec,
+                hasFinishedCountdown: true,
+              };
+            }
+          }
+
+          return {
+            ...prev,
+            elapsedSeconds: newElapsed,
+          };
+        });
+      }, 1000);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [timerState.isRunning, preferences.enableSoundNotification, preferences.enableDesktopNotification, showToast]);
 
   // Activity CRUD
   const addActivity = useCallback((data: Omit<Activity, 'id' | 'userId' | 'createdAt'>): Activity => {
@@ -255,7 +291,7 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return updated;
     });
     triggerConfetti();
-    showToast(`Goal "${newGoal.title}" created! Let's crush it.`);
+    showToast(`Goal "${newGoal.title}" created!`);
     return newGoal;
   }, [userId, showToast]);
 
@@ -287,43 +323,101 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     showToast('Preferences updated');
   }, [userId, showToast]);
 
-  // Active Stopwatch Timer
-  const startTimer = useCallback((title: string, categoryId: string, notes: string = '', tags: string[] = []) => {
+  // Timer Methods (Clean resume / pause / start / save / reset)
+  const startTimer = useCallback((
+    title?: string, 
+    categoryId?: string, 
+    notes: string = '', 
+    tags: string[] = [], 
+    mode: TimerMode = 'countdown', 
+    targetMinutes: number = 25
+  ) => {
     setTimerState({
       isRunning: true,
+      mode,
       startTime: Date.now(),
       elapsedSeconds: 0,
-      title,
+      targetMinutes,
+      hasFinishedCountdown: false,
+      title: title !== undefined ? title : '',
       categoryId: categoryId || categories[0]?.id || 'cat_work',
       notes,
       tags,
     });
-    showToast(`Timer started: "${title || 'Focused Activity'}"`, 'info');
+    showToast(`Timer started: "${title || 'Focus Session'}"`, 'info');
   }, [categories, showToast]);
 
   const pauseTimer = useCallback(() => {
-    setTimerState(prev => ({ ...prev, isRunning: false, startTime: null }));
+    setTimerState(prev => ({
+      ...prev,
+      isRunning: false,
+      startTime: null,
+    }));
   }, []);
 
   const resumeTimer = useCallback(() => {
-    setTimerState(prev => ({ ...prev, isRunning: true, startTime: Date.now() }));
+    setTimerState(prev => ({
+      ...prev,
+      isRunning: true,
+      startTime: Date.now(),
+      hasFinishedCountdown: false,
+    }));
   }, []);
 
-  const discardTimer = useCallback(() => {
-    setTimerState(INITIAL_TIMER);
-    showToast('Timer discarded', 'info');
+  const toggleTimer = useCallback(() => {
+    if (timerState.isRunning) {
+      pauseTimer();
+    } else {
+      resumeTimer();
+    }
+  }, [timerState.isRunning, pauseTimer, resumeTimer]);
+
+  const resetTimer = useCallback(() => {
+    setTimerState(prev => ({
+      ...prev,
+      isRunning: false,
+      startTime: null,
+      elapsedSeconds: 0,
+      hasFinishedCountdown: false,
+    }));
+    showToast('Timer reset to 0:00', 'info');
   }, [showToast]);
+
+  const setTimerMode = useCallback((mode: TimerMode) => {
+    setTimerState(prev => ({
+      ...prev,
+      mode,
+      elapsedSeconds: 0,
+      hasFinishedCountdown: false,
+    }));
+  }, []);
+
+  const setTargetMinutes = useCallback((minutes: number) => {
+    setTimerState(prev => ({
+      ...prev,
+      targetMinutes: minutes,
+      elapsedSeconds: 0,
+      hasFinishedCountdown: false,
+    }));
+  }, []);
+
+  const setTimerTitle = useCallback((title: string) => {
+    setTimerState(prev => ({ ...prev, title }));
+  }, []);
+
+  const setTimerCategory = useCallback((categoryId: string) => {
+    setTimerState(prev => ({ ...prev, categoryId }));
+  }, []);
 
   const stopTimerAndSave = useCallback(() => {
     if (timerState.elapsedSeconds < 30) {
-      showToast('Activity was under 30 seconds. Timer discarded.', 'info');
-      setTimerState(INITIAL_TIMER);
+      showToast('Session was under 30 seconds. Timer reset without logging.', 'info');
+      setTimerState(prev => ({ ...prev, isRunning: false, elapsedSeconds: 0, hasFinishedCountdown: false }));
       return;
     }
 
     const durationMinutes = Math.max(1, Math.round(timerState.elapsedSeconds / 60));
     const nowTime = getCurrentTimeString();
-    // Calculate start time based on duration
     const [nowH, nowM] = nowTime.split(':').map(Number);
     let startMinTotal = nowH * 60 + nowM - durationMinutes;
     if (startMinTotal < 0) startMinTotal += 24 * 60;
@@ -332,20 +426,28 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const startTimeStr = `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}`;
 
     addActivity({
-      title: timerState.title.trim() || 'Recorded Focus Session',
-      description: timerState.notes || '',
+      title: timerState.title.trim() || 'Focused Work Session',
+      description: timerState.notes || undefined,
       categoryId: timerState.categoryId || categories[0]?.id || 'cat_work',
       date: getTodayString(),
       startTime: startTimeStr,
       endTime: nowTime,
       durationMinutes,
       status: 'completed',
-      tags: timerState.tags.length > 0 ? timerState.tags : ['timer-session'],
+      tags: timerState.tags.length > 0 ? timerState.tags : ['focus-timer'],
       energyLevel: 'high',
     });
 
-    setTimerState(INITIAL_TIMER);
+    setTimerState(prev => ({
+      ...prev,
+      isRunning: false,
+      startTime: null,
+      elapsedSeconds: 0,
+      hasFinishedCountdown: false,
+    }));
+
     triggerConfetti();
+    showToast(`Saved "${timerState.title || 'Focus Session'}" (${durationMinutes}m) to history!`);
   }, [timerState, categories, addActivity, showToast]);
 
   // Modal actions
@@ -396,10 +498,15 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updatePreferences,
         timerState,
         startTimer,
+        toggleTimer,
         pauseTimer,
         resumeTimer,
-        discardTimer,
+        resetTimer,
         stopTimerAndSave,
+        setTimerMode,
+        setTargetMinutes,
+        setTimerTitle,
+        setTimerCategory,
         isActivityModalOpen,
         editingActivity,
         prefillData,
