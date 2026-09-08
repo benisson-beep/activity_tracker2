@@ -9,7 +9,7 @@ interface CategoryDonutProps {
 
 export const CategoryDonut: React.FC<CategoryDonutProps> = ({ categories, totalMinutes }) => {
   return (
-    <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+    <div className="p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -26,7 +26,7 @@ export const CategoryDonut: React.FC<CategoryDonutProps> = ({ categories, totalM
 
       {/* Stacked Proportional Bar */}
       {categories.length > 0 && (
-        <div className="w-full h-3 rounded-full overflow-hidden flex bg-slate-100 dark:bg-slate-800 mb-5">
+        <div className="w-full h-2.5 rounded-sm overflow-hidden flex bg-slate-100 dark:bg-slate-800 mb-4">
           {categories.map(c => (
             <div
               key={c.id}

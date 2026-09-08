@@ -148,8 +148,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         </div>
 
         {/* Hero Interactive App Mockup Preview */}
-        <div className="mt-14 p-2.5 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl overflow-hidden text-left max-w-4xl mx-auto">
-          <div className="rounded-2xl bg-slate-950 p-4 sm:p-6 border border-slate-800/60 space-y-4">
+        <div className="mt-14 p-2 rounded-xl bg-slate-900/80 border border-slate-800 shadow-xl overflow-hidden text-left max-w-4xl mx-auto">
+          <div className="rounded-lg bg-slate-950 p-4 sm:p-6 border border-slate-800/60 space-y-4">
             {/* Window bar */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/60 text-xs">
               <div className="flex items-center space-x-2">
@@ -249,7 +249,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
       {/* Demo Personas Switcher Section */}
       <section id="personas" className="py-16 px-4 sm:px-6 max-w-4xl mx-auto border-t border-slate-900">
-        <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/80 border border-slate-800">
+        <div className="p-6 sm:p-8 rounded-xl bg-slate-900/80 border border-slate-800">
           <div className="text-center max-w-xl mx-auto mb-6">
             <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/40">
               Interactive Test Accounts
@@ -267,14 +267,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               <button
                 key={u.id}
                 onClick={() => handleSelectPersonaAndEnter(u.id)}
-                className={`p-4 rounded-2xl border text-left transition-all group ${
+                className={`p-4 rounded-xl border text-left transition-colors group ${
                   u.id === activePersonaId
-                    ? 'bg-slate-800 border-emerald-500 shadow-lg'
+                    ? 'bg-slate-800 border-emerald-500 shadow-md'
                     : 'bg-slate-950 border-slate-800 hover:border-slate-700'
                 }`}
               >
                 <div className="flex items-center space-x-3 mb-2">
-                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover ring-2 ring-emerald-500/30" />
+                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover ring-1 ring-emerald-500/30" />
                   <div className="truncate">
                     <p className="text-xs font-bold text-white truncate">{u.name}</p>
                     <p className="text-[10px] text-slate-400 truncate">{u.role}</p>
@@ -302,11 +302,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between">
+          <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between">
             <div>
-              <h3 className="text-lg font-bold text-white">Free Starter</h3>
+              <h3 className="text-base font-bold text-white">Free Starter</h3>
               <p className="text-xs text-slate-400 mt-1">Basic personal time logging</p>
-              <p className="text-3xl font-extrabold text-white font-mono mt-4">$0</p>
+              <p className="text-3xl font-bold text-white font-mono mt-4">$0</p>
               <ul className="mt-4 space-y-2 text-xs text-slate-300">
                 <li className="flex items-center space-x-2">
                   <Check size={14} className="text-emerald-500" />
@@ -324,20 +324,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             </div>
             <button
               onClick={() => openAuth('signup')}
-              className="mt-6 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-colors"
+              className="mt-6 w-full py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition-colors border border-slate-700"
             >
               Get Started Free
             </button>
           </div>
 
-          <div className="p-6 rounded-3xl bg-slate-900 border-2 border-emerald-500 shadow-xl shadow-emerald-500/10 flex flex-col justify-between relative">
-            <span className="absolute -top-3 right-6 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-sans">
+          <div className="p-6 rounded-xl bg-slate-900 border-2 border-emerald-500 flex flex-col justify-between relative">
+            <span className="absolute -top-3 right-6 text-[10px] font-mono font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500 text-slate-950">
               Most Popular
             </span>
             <div>
-              <h3 className="text-lg font-bold text-white">Pro Member</h3>
+              <h3 className="text-base font-bold text-white">Pro Member</h3>
               <p className="text-xs text-slate-400 mt-1">For deep work and high performers</p>
-              <p className="text-3xl font-extrabold text-white font-mono mt-4">$12 <span className="text-xs font-normal text-slate-400">/ mo</span></p>
+              <p className="text-3xl font-bold text-white font-mono mt-4">$12 <span className="text-xs font-normal text-slate-400">/ mo</span></p>
               <ul className="mt-4 space-y-2 text-xs text-slate-300">
                 <li className="flex items-center space-x-2">
                   <Check size={14} className="text-emerald-500" />
@@ -359,17 +359,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             </div>
             <button
               onClick={() => handleSelectPersonaAndEnter('user_alex')}
-              className="mt-6 w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
+              className="mt-6 w-full py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors"
             >
               Launch Pro Demo
             </button>
           </div>
 
-          <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between">
+          <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between">
             <div>
-              <h3 className="text-lg font-bold text-white">Enterprise Pods</h3>
+              <h3 className="text-base font-bold text-white">Enterprise Pods</h3>
               <p className="text-xs text-slate-400 mt-1">For teams and engineering departments</p>
-              <p className="text-3xl font-extrabold text-white font-mono mt-4">$29 <span className="text-xs font-normal text-slate-400">/ seat</span></p>
+              <p className="text-3xl font-bold text-white font-mono mt-4">$29 <span className="text-xs font-normal text-slate-400">/ seat</span></p>
               <ul className="mt-4 space-y-2 text-xs text-slate-300">
                 <li className="flex items-center space-x-2">
                   <Check size={14} className="text-emerald-500" />
@@ -386,10 +386,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               </ul>
             </div>
             <button
-              onClick={() => handleSelectPersonaAndEnter('user_elena')}
-              className="mt-6 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-colors"
+              onClick={() => handleSelectPersonaAndEnter('user_jordan')}
+              className="mt-6 w-full py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition-colors border border-slate-700"
             >
-              Explore Pod Demo
+              Explore Pods
             </button>
           </div>
         </div>
@@ -482,7 +482,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 bg-slate-900/40 border border-slate-800 rounded-3xl p-6 sm:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 bg-slate-900/40 border border-slate-800 rounded-xl p-6 sm:p-8">
           {/* Left Info Column */}
           <div className="lg:col-span-2 space-y-6">
             <div>

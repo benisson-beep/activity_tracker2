@@ -24,7 +24,7 @@ export const DayTimelineBar: React.FC<DayTimelineBarProps> = ({ activities, cate
   const getCategory = (catId: string) => categories.find(c => c.id === catId);
 
   return (
-    <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+    <div className="p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
       <div className="flex items-center justify-between mb-3">
         <div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -49,7 +49,7 @@ export const DayTimelineBar: React.FC<DayTimelineBarProps> = ({ activities, cate
       </div>
 
       {/* 24h Bar Track */}
-      <div className="relative w-full h-9 bg-slate-100 dark:bg-slate-800/80 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700/60 flex items-center">
+      <div className="relative w-full h-8 bg-slate-100 dark:bg-slate-800/80 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700/60 flex items-center">
         {activities.length === 0 ? (
           <div className="w-full text-center text-xs text-slate-400 font-medium">
             No activities logged yet today. Click "Record Activity" or use the quick bar below.

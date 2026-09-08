@@ -199,12 +199,12 @@ export const HistoryView: React.FC = () => {
 
         <div className="flex items-center space-x-2">
           {/* View Toggle: Timeline vs Table */}
-          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
             <button
               onClick={() => setViewMode('timeline')}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
                 viewMode === 'timeline'
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
               title="Timeline flow view"
@@ -214,9 +214,9 @@ export const HistoryView: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
                 viewMode === 'table'
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
               title="Data table view"
@@ -228,7 +228,7 @@ export const HistoryView: React.FC = () => {
 
           <button
             onClick={handleExportCSV}
-            className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors flex items-center space-x-1"
+            className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium transition-colors flex items-center space-x-1 border border-slate-200 dark:border-slate-700"
             title="Export filtered activities as CSV"
           >
             <Download size={14} />
@@ -237,7 +237,7 @@ export const HistoryView: React.FC = () => {
 
           <button
             onClick={() => openCreateActivityModal()}
-            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition-all flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors flex items-center space-x-1.5"
           >
             <Plus size={14} className="stroke-[2.5]" />
             <span>Record</span>
@@ -246,17 +246,17 @@ export const HistoryView: React.FC = () => {
       </div>
 
       {/* Filter and Search Toolbar */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-        <div className="flex flex-col md:flex-row gap-3">
+      <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+        <div className="flex flex-col md:flex-row gap-2.5">
           {/* Search Input */}
           <div className="flex-1 relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search by title, notes, or tags (#work, #rfc...)"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+              className="w-full pl-8 pr-3 py-1.5 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
             />
           </div>
 
@@ -264,7 +264,7 @@ export const HistoryView: React.FC = () => {
           <select
             value={selectedCategory}
             onChange={e => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="px-2.5 py-1.5 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
           >
             <option value="all">All Categories</option>
             {categories.map(c => (
@@ -278,7 +278,7 @@ export const HistoryView: React.FC = () => {
           <select
             value={dateFilter}
             onChange={e => setDateFilter(e.target.value as DateFilter)}
-            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="px-2.5 py-1.5 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
           >
             <option value="all">All Dates</option>
             <option value="today">Today Only</option>
@@ -291,7 +291,7 @@ export const HistoryView: React.FC = () => {
           <select
             value={durationFilter}
             onChange={e => setDurationFilter(e.target.value as DurationFilter)}
-            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="px-2.5 py-1.5 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
           >
             <option value="all">Any Duration</option>
             <option value="under30">&lt; 30 mins (Sprint)</option>
@@ -304,7 +304,7 @@ export const HistoryView: React.FC = () => {
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value as SortOption)}
-            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="px-2.5 py-1.5 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
           >
             <option value="date-desc">Newest First</option>
             <option value="date-asc">Oldest First</option>
@@ -316,21 +316,21 @@ export const HistoryView: React.FC = () => {
 
         {/* Bulk Action Bar if items selected */}
         {selectedIds.length > 0 && (
-          <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold animate-scale-in">
+          <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs font-medium">
             <span className="text-emerald-800 dark:text-emerald-300">
               {selectedIds.length} {selectedIds.length === 1 ? 'activity' : 'activities'} selected
             </span>
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleBulkDelete}
-                className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs flex items-center space-x-1"
+                className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs flex items-center space-x-1"
               >
                 <Trash2 size={13} />
                 <span>Delete Selected</span>
               </button>
               <button
                 onClick={() => setSelectedIds([])}
-                className="px-2.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
+                className="px-2 py-1 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800"
               >
                 Deselect All
               </button>
@@ -341,9 +341,9 @@ export const HistoryView: React.FC = () => {
 
       {/* Main Content Area */}
       {filteredActivities.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-3">
-            <Search size={22} />
+        <div className="p-10 text-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-3">
+            <Search size={18} />
           </div>
           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
             No matching activities found
@@ -358,7 +358,7 @@ export const HistoryView: React.FC = () => {
               setDateFilter('all');
               setDurationFilter('all');
             }}
-            className="mt-4 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+            className="mt-4 px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 border border-slate-200 dark:border-slate-700"
           >
             Clear All Filters
           </button>
@@ -372,7 +372,7 @@ export const HistoryView: React.FC = () => {
               <div key={dateKey} className="space-y-3">
                 {/* Date Header Stamp */}
                 <div className="flex items-center space-x-3">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs">
+                  <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
                     {formatDateDisplay(dateKey, 'full')}
                   </span>
                   <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
@@ -389,10 +389,10 @@ export const HistoryView: React.FC = () => {
                     return (
                       <div
                         key={act.id}
-                        className={`relative p-4 rounded-2xl bg-white dark:bg-slate-900 border transition-all group ${
+                        className={`relative p-3.5 rounded-lg bg-white dark:bg-slate-900 border transition-colors group ${
                           isSelected
-                            ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md'
-                            : 'border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md'
+                            ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20'
+                            : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                         }`}
                       >
                         {/* Timeline Node Dot */}
@@ -443,7 +443,7 @@ export const HistoryView: React.FC = () => {
 
                               {/* Description / Notes if present */}
                               {act.description && (
-                                <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-md border border-slate-200/80 dark:border-slate-800">
                                   {act.description}
                                 </p>
                               )}
@@ -508,7 +508,7 @@ export const HistoryView: React.FC = () => {
         </div>
       ) : (
         /* TABLE / LIST VIEW */
-        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>

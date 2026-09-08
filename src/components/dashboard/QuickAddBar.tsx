@@ -50,9 +50,9 @@ export const QuickAddBar: React.FC = () => {
   return (
     <form 
       onSubmit={handleQuickSubmit}
-      className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm"
+      className="p-3 sm:p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
     >
-      <div className="flex flex-col md:flex-row md:items-center gap-3">
+      <div className="flex flex-col md:flex-row md:items-center gap-2.5">
         {/* Input */}
         <div className="flex-1 relative">
           <input
@@ -60,12 +60,12 @@ export const QuickAddBar: React.FC = () => {
             placeholder="What did you just finish? (e.g. Shipped authentication PR, Gym workout...)"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="w-full pl-3.5 pr-20 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="w-full pl-3 pr-16 py-1.5 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
           />
           <button
             type="button"
             onClick={handleOpenDetailed}
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-[11px] font-medium text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center space-x-1 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-0.5 text-[11px] font-medium text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center space-x-1 rounded hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
             title="Expand to detailed form"
           >
             <SlidersHorizontal size={12} />
@@ -79,7 +79,7 @@ export const QuickAddBar: React.FC = () => {
           <select
             value={selectedCategoryId}
             onChange={e => setSelectedCategoryId(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/50 max-w-[150px] truncate"
+            className="px-2.5 py-1.5 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 max-w-[150px] truncate"
           >
             {categories.map(c => (
               <option key={c.id} value={c.id}>
@@ -88,14 +88,14 @@ export const QuickAddBar: React.FC = () => {
             ))}
           </select>
 
-          {/* Quick Duration Pills */}
-          <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+          {/* Quick Duration Chips */}
+          <div className="flex items-center space-x-0.5 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-md border border-slate-200 dark:border-slate-700">
             {[15, 30, 45, 60, 90, 120].map(mins => (
               <button
                 key={mins}
                 type="button"
                 onClick={() => setSelectedDuration(mins)}
-                className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+                className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors ${
                   selectedDuration === mins
                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -110,7 +110,7 @@ export const QuickAddBar: React.FC = () => {
           <button
             type="submit"
             disabled={!title.trim()}
-            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 active:scale-95 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition-all flex items-center space-x-1.5 flex-shrink-0"
+            className="px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors flex items-center space-x-1.5 flex-shrink-0"
           >
             <Check size={14} className="stroke-[2.5]" />
             <span>Log</span>

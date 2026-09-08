@@ -103,12 +103,12 @@ export const TimerView: React.FC = () => {
         </div>
 
         {/* Mode Switcher */}
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 self-start sm:self-auto">
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 self-start sm:self-auto">
           <button
             onClick={() => setTimerMode('countdown')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
               timerState.mode === 'countdown'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white'
                 : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
@@ -116,9 +116,9 @@ export const TimerView: React.FC = () => {
           </button>
           <button
             onClick={() => setTimerMode('stopwatch')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
               timerState.mode === 'stopwatch'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white'
                 : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
@@ -128,28 +128,19 @@ export const TimerView: React.FC = () => {
       </div>
 
       {/* Main Focus Console Card */}
-      <div className="p-6 sm:p-10 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden text-center flex flex-col items-center">
-        {/* Ambient background glow when timer is running */}
-        <div
-          className={`absolute inset-0 transition-opacity duration-1000 pointer-events-none ${
-            timerState.isRunning
-              ? 'opacity-20 bg-radial from-emerald-500 via-transparent to-transparent'
-              : 'opacity-0'
-          }`}
-        />
-
+      <div className="p-6 sm:p-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden text-center flex flex-col items-center">
         {/* Active Task Name Input */}
-        <div className="w-full max-w-md mb-6 z-10">
+        <div className="w-full max-w-md mb-5 z-10">
           <input
             type="text"
             placeholder="What are you focusing on? (e.g. Refactor API routes, Chapter 4 study...)"
             value={timerState.title}
             onChange={e => setTimerTitle(e.target.value)}
-            className="w-full text-center px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="w-full text-center px-3.5 py-2 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
           />
 
           {/* Category Pill Selector */}
-          <div className="mt-3 flex items-center justify-center gap-1.5 flex-wrap">
+          <div className="mt-2.5 flex items-center justify-center gap-1.5 flex-wrap">
             {categories.map(c => {
               const isSelected = (timerState.categoryId || categories[0]?.id) === c.id;
               return (
@@ -157,13 +148,13 @@ export const TimerView: React.FC = () => {
                   key={c.id}
                   type="button"
                   onClick={() => setTimerCategory(c.id)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold border flex items-center space-x-1.5 transition-all ${
+                  className={`px-2 py-0.5 rounded-md text-xs font-medium border flex items-center space-x-1.5 transition-colors ${
                     isSelected
-                      ? 'border-emerald-500 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 shadow-xs'
+                      ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
                       : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                   }`}
                 >
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c.color }} />
                   <span>{c.name}</span>
                 </button>
               );
@@ -173,21 +164,21 @@ export const TimerView: React.FC = () => {
 
         {/* Preset Duration Chips (for Countdown Mode) */}
         {timerState.mode === 'countdown' && (
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-6 z-10">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-5 z-10">
             {[
-              { label: '15m Quick Sprint', mins: 15 },
+              { label: '15m Sprint', mins: 15 },
               { label: '25m Pomodoro', mins: 25 },
               { label: '45m Focus Block', mins: 45 },
               { label: '60m Deep Work', mins: 60 },
-              { label: '90m Ultradian Sprint', mins: 90 },
+              { label: '90m Ultradian', mins: 90 },
             ].map(chip => (
               <button
                 key={chip.mins}
                 onClick={() => setTargetMinutes(chip.mins)}
                 disabled={timerState.isRunning}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
                   timerState.targetMinutes === chip.mins
-                    ? 'bg-slate-900 text-white dark:bg-emerald-600 border-transparent shadow-sm'
+                    ? 'bg-slate-900 text-white dark:bg-emerald-600 border-transparent'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
                 } ${timerState.isRunning ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
@@ -227,11 +218,11 @@ export const TimerView: React.FC = () => {
 
           {/* Center Digital Clock Display */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl sm:text-6xl font-black font-mono tracking-tight text-slate-900 dark:text-white drop-shadow-xs">
+            <span className="text-4xl sm:text-6xl font-bold font-mono tracking-tight text-slate-900 dark:text-white">
               {formattedTime}
             </span>
 
-            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-400 mt-2">
+            <span className="text-xs font-mono font-medium uppercase tracking-wider text-slate-400 mt-2">
               {timerState.mode === 'countdown'
                 ? timerState.hasFinishedCountdown
                   ? 'Session Complete!'
@@ -239,10 +230,10 @@ export const TimerView: React.FC = () => {
                 : `${formatDuration(Math.round(timerState.elapsedSeconds / 60))} total elapsed`}
             </span>
 
-            {/* Pulsing indicator if active */}
+            {/* Status indicator if active */}
             {timerState.isRunning && (
-              <div className="mt-3 flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <div className="mt-2.5 flex items-center space-x-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span>Timer Running</span>
               </div>
             )}
@@ -251,42 +242,42 @@ export const TimerView: React.FC = () => {
 
         {/* Session Finished Notification Banner */}
         {timerState.hasFinishedCountdown && (
-          <div className="my-4 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center space-x-2 animate-scale-in z-10">
+          <div className="my-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-medium flex items-center space-x-2 z-10">
             <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
             <span>Target session complete! Click "Save to History" below to record this activity.</span>
           </div>
         )}
 
         {/* Main Controls Row: Start/Pause, Save, Reset */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-6 z-10">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 mt-5 z-10">
           {/* Reset / Restart */}
           <button
             onClick={resetTimer}
             disabled={timerState.elapsedSeconds === 0}
-            className="px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center space-x-2 transition-all"
+            className="px-3.5 py-2 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 text-slate-700 dark:text-slate-300 font-medium text-xs flex items-center space-x-1.5 border border-slate-200 dark:border-slate-700 transition-colors"
             title="Reset timer to 0"
           >
-            <RotateCcw size={15} />
+            <RotateCcw size={14} />
             <span>Reset</span>
           </button>
 
           {/* Big Play / Pause Toggle Button */}
           <button
             onClick={toggleTimer}
-            className={`px-8 py-4 rounded-2xl font-black text-sm shadow-xl active:scale-95 transition-all flex items-center space-x-2 ${
+            className={`px-6 py-2 rounded-md font-semibold text-xs transition-colors flex items-center space-x-1.5 ${
               timerState.isRunning
-                ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/25'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
+                ? 'bg-amber-500 hover:bg-amber-400 text-slate-950'
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
             }`}
           >
             {timerState.isRunning ? (
               <>
-                <Pause size={18} className="stroke-[2.5]" />
+                <Pause size={16} className="stroke-[2.5]" />
                 <span>Pause Timer</span>
               </>
             ) : (
               <>
-                <Play size={18} className="stroke-[2.5] fill-white" />
+                <Play size={16} className="stroke-[2.5] fill-white" />
                 <span>{timerState.elapsedSeconds > 0 ? 'Resume Timer' : 'Start Focus'}</span>
               </>
             )}
@@ -296,14 +287,14 @@ export const TimerView: React.FC = () => {
           <button
             onClick={stopTimerAndSave}
             disabled={timerState.elapsedSeconds < 30}
-            className={`px-5 py-3 rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center space-x-2 ${
+            className={`px-4 py-2 rounded-md font-medium text-xs transition-colors flex items-center space-x-1.5 ${
               timerState.elapsedSeconds >= 30 || timerState.hasFinishedCountdown
-                ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/25 active:scale-95'
+                ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400 opacity-50 cursor-not-allowed'
             }`}
             title="Save session to your history"
           >
-            <Check size={16} className="stroke-[2.5]" />
+            <Check size={15} className="stroke-[2.5]" />
             <span>Save to History</span>
           </button>
         </div>
@@ -312,10 +303,10 @@ export const TimerView: React.FC = () => {
       {/* Notification Preferences & Today's Summary Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Notification Settings Card */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
           <div className="flex items-center space-x-2">
-            <Bell size={16} className="text-emerald-500" />
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white">
+            <Bell size={15} className="text-emerald-500" />
+            <h3 className="text-xs font-semibold text-slate-900 dark:text-white">
               End-of-Session Notifications
             </h3>
           </div>
@@ -334,19 +325,19 @@ export const TimerView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleTestChime}
-                  className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded-md"
+                  className="px-2 py-1 text-[10px] font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700"
                 >
                   Test Sound
                 </button>
                 <button
                   type="button"
                   onClick={() => updatePreferences({ enableSoundNotification: !(preferences.enableSoundNotification !== false) })}
-                  className={`w-10 h-6 rounded-full transition-colors relative p-0.5 ${
+                  className={`w-9 h-5 rounded-full transition-colors relative p-0.5 ${
                     preferences.enableSoundNotification !== false ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'
                   }`}
                 >
                   <span
-                    className={`block w-5 h-5 rounded-full bg-white transition-transform ${
+                    className={`block w-4 h-4 rounded-full bg-white transition-transform ${
                       preferences.enableSoundNotification !== false ? 'translate-x-4' : 'translate-x-0'
                     }`}
                   />
@@ -361,13 +352,13 @@ export const TimerView: React.FC = () => {
                 <span>Browser Push Notifications</span>
               </div>
               {notificationPermission === 'granted' ? (
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-md">
+                <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-md">
                   Active
                 </span>
               ) : (
                 <button
                   onClick={handleRequestPermission}
-                  className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs"
+                  className="px-2.5 py-1 text-[10px] font-medium rounded-md bg-indigo-600 hover:bg-indigo-500 text-white"
                 >
                   Enable Permission
                 </button>
@@ -377,11 +368,11 @@ export const TimerView: React.FC = () => {
         </div>
 
         {/* Today's Focus Output Card */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
           <div>
             <div className="flex items-center space-x-2">
-              <Flame size={16} className="text-amber-500" />
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white">
+              <Flame size={15} className="text-amber-500" />
+              <h3 className="text-xs font-semibold text-slate-900 dark:text-white">
                 Today's Focus Momentum
               </h3>
             </div>
@@ -390,10 +381,10 @@ export const TimerView: React.FC = () => {
             </p>
 
             <div className="mt-4 flex items-baseline space-x-3">
-              <span className="text-3xl font-black font-mono text-slate-900 dark:text-white">
+              <span className="text-3xl font-bold font-mono text-slate-900 dark:text-white">
                 {formatDuration(todayTotalMins)}
               </span>
-              <span className="text-xs text-slate-400 font-medium">
+              <span className="text-xs text-slate-400 font-normal">
                 across {todayFocusActs.length} recorded blocks
               </span>
             </div>
@@ -401,7 +392,7 @@ export const TimerView: React.FC = () => {
 
           <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
             <span>Peak Focus Streak</span>
-            <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400 font-mono">
               {todayFocusActs.length >= 3 ? 'High Momentum 🔥' : 'In Progress'}
             </span>
           </div>

@@ -100,29 +100,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onNavigate('reports')}
-            className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1.5"
+            className="px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium transition-colors flex items-center space-x-1.5"
           >
             <span>Daily Summary</span>
             <ArrowRight size={13} />
           </button>
           <button
             onClick={() => openCreateActivityModal()}
-            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition-all flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors flex items-center space-x-1.5"
           >
-            <Plus size={15} className="stroke-[2.5]" />
+            <Plus size={14} className="stroke-[2.5]" />
             <span>Record Activity</span>
           </button>
         </div>
       </div>
 
-      {/* 4 Executive Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Unified Executive Metric KPI Strip */}
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-slate-800/80 overflow-hidden">
         <MetricCard
           title="Today's Logged Time"
           value={formatDuration(todaySummary.totalMinutes)}
-          subtitle={todaySummary.totalHours > 0 ? `${todaySummary.totalHours} active hours` : 'Start logging today'}
+          subtitle={todaySummary.totalHours > 0 ? `${todaySummary.totalHours} active hours` : 'No logs yet'}
           deltaPercent={todaySummary.minuteDeltaPercent}
-          icon={<Clock size={18} className="text-emerald-500" />}
+          icon={<Clock size={16} className="text-emerald-500" />}
         />
 
         <MetricCard
@@ -130,22 +130,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           value={todaySummary.count}
           subtitle="Distinct time blocks"
           badge={todaySummary.count >= 4 ? 'High Output' : undefined}
-          icon={<ActivityIcon size={18} className="text-indigo-500" />}
+          icon={<ActivityIcon size={16} className="text-indigo-500" />}
         />
 
         <MetricCard
-          title="Leading Focus Today"
+          title="Leading Focus"
           value={topCategory?.name || 'None yet'}
-          subtitle={todaySummary.topCatMinutes > 0 ? `${formatDuration(todaySummary.topCatMinutes)} committed` : 'Record to see breakdown'}
-          icon={<Compass size={18} className="text-pink-500" />}
+          subtitle={todaySummary.topCatMinutes > 0 ? `${formatDuration(todaySummary.topCatMinutes)} logged` : 'Awaiting records'}
+          icon={<Compass size={16} className="text-sky-500" />}
         />
 
         <MetricCard
           title="Goal Progress"
           value={topGoalProg ? `${topGoalProg.percentage}%` : 'No Goals'}
-          subtitle={topGoal ? topGoal.title : 'Configure in Goals tab'}
+          subtitle={topGoal ? topGoal.title : 'Configure in Goals'}
           badge={topGoalProg?.status === 'ahead' ? 'Ahead' : topGoalProg?.status === 'completed' ? 'Done' : undefined}
-          icon={<Flame size={18} className="text-amber-500" />}
+          icon={<Flame size={16} className="text-amber-500" />}
         />
       </div>
 
@@ -172,7 +172,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       <SmartInsights insights={smartInsights} />
 
       {/* Recent Activities Section */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -202,19 +202,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
               return (
                 <div
                   key={act.id}
-                  className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 px-2 rounded-xl transition-colors"
+                  className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 group hover:bg-slate-50/60 dark:hover:bg-slate-800/30 px-2 rounded-lg transition-colors"
                 >
                   <div className="flex items-start space-x-3 truncate">
                     <div 
-                      className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white mt-0.5 shadow-xs"
+                      className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 text-white mt-0.5"
                       style={{ backgroundColor: cat?.color || '#6366f1' }}
                     >
-                      <CategoryIcon name={cat?.icon || 'Tag'} size={15} />
+                      <CategoryIcon name={cat?.icon || 'Tag'} size={14} />
                     </div>
 
                     <div className="truncate">
                       <div className="flex items-center space-x-2 truncate">
-                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                        <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">
                           {act.title}
                         </span>
                         {act.energyLevel && (
@@ -225,7 +225,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                       </div>
 
                       <div className="flex items-center space-x-2 mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                        <span className="font-medium text-slate-700 dark:text-slate-300">
                           {cat?.name || 'Uncategorized'}
                         </span>
                         <span>•</span>
@@ -238,8 +238,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end space-x-3 self-end sm:self-center pl-11 sm:pl-0">
-                    <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                  <div className="flex items-center justify-between sm:justify-end space-x-3 self-end sm:self-center pl-10 sm:pl-0">
+                    <span className="text-xs font-mono font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
                       {formatDuration(act.durationMinutes)}
                     </span>
 

@@ -120,22 +120,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithDemoGoogle = (
-    name: string = 'Jordan Miller',
-    email: string = 'jordan.miller.google@gmail.com'
+    customName?: string,
+    customEmail?: string
   ): User => {
+    const email = (customEmail || 'google.user@gmail.com').trim();
     const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (existing) {
       setCurrentUserId(existing.id);
       return existing;
     }
 
+    const derivedName = customName?.trim() || email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     const googleUser: User = {
       id: `user_google_${Date.now()}`,
-      name,
+      name: derivedName,
       email,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-      role: 'Full-Stack Engineer (Google)',
-      plan: 'pro',
+      avatar: `https://lh3.googleusercontent.com/a/default-user=s96-c`,
+      role: 'Google Account User',
+      plan: 'free',
       onboarded: true,
       createdAt: new Date().toISOString(),
     };

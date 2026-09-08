@@ -140,14 +140,14 @@ export const CalendarView: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Mode Switcher */}
-          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
             {(['month', 'week', 'day'] as CalendarMode[]).map(m => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-semibold capitalize transition-colors ${
                   mode === m
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
@@ -157,23 +157,23 @@ export const CalendarView: React.FC = () => {
           </div>
 
           {/* Today and Nav Arrows */}
-          <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
             <button
               onClick={handlePrev}
-              className="p-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700"
+              className="p-1 rounded text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700"
               title="Previous"
             >
               <ChevronLeft size={16} />
             </button>
             <button
               onClick={handleToday}
-              className="px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg"
+              className="px-2 py-0.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded"
             >
               Today
             </button>
             <button
               onClick={handleNext}
-              className="p-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700"
+              className="p-1 rounded text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700"
               title="Next"
             >
               <ChevronRight size={16} />
@@ -184,12 +184,12 @@ export const CalendarView: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setShowFontMenu(!showFontMenu)}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 text-xs font-semibold border border-slate-200 dark:border-slate-700 flex items-center space-x-1.5 transition-colors"
+              className="px-2.5 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 text-xs font-medium border border-slate-200 dark:border-slate-700 flex items-center space-x-1.5 transition-colors"
               title="Change calendar numbers font style"
             >
               <Type size={13} className="text-emerald-600 dark:text-emerald-400" />
               <span className="hidden md:inline text-slate-400 font-normal">Font:</span>
-              <span className="font-bold text-slate-900 dark:text-white capitalize">
+              <span className="font-semibold text-slate-900 dark:text-white capitalize">
                 {FONT_OPTIONS.find(f => f.id === currentFont)?.label || 'Geometric'}
               </span>
               <span className={`text-[10px] px-1 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold ${numberFontClass}`}>
@@ -200,8 +200,8 @@ export const CalendarView: React.FC = () => {
             {showFontMenu && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setShowFontMenu(false)} />
-                <div className="absolute right-0 mt-2 w-64 p-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-30 space-y-1 animate-fade-in">
-                  <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <div className="absolute right-0 mt-2 w-64 p-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-lg z-30 space-y-1 animate-fade-in">
+                  <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Number Font Style
                   </div>
                   {FONT_OPTIONS.map(f => {
@@ -218,20 +218,20 @@ export const CalendarView: React.FC = () => {
                           updatePreferences({ calendarNumberFont: f.id });
                           setShowFontMenu(false);
                         }}
-                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition-all ${
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
                           isSelected
                             ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60'
                             : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         <div>
-                          <p className="text-xs font-bold flex items-center space-x-1.5">
+                          <p className="text-xs font-semibold flex items-center space-x-1.5">
                             <span>{f.label}</span>
                             {isSelected && <Check size={12} className="stroke-[3]" />}
                           </p>
                           <p className="text-[10px] text-slate-400">{f.description}</p>
                         </div>
-                        <span className={`text-base font-bold tabular-nums px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 ${fontPreviewClass}`}>
+                        <span className={`text-sm font-bold tabular-nums px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 ${fontPreviewClass}`}>
                           {f.preview}
                         </span>
                       </button>
@@ -244,7 +244,7 @@ export const CalendarView: React.FC = () => {
 
           <button
             onClick={() => openCreateActivityModal({ date: toDateString(currentDate) })}
-            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition-all flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors flex items-center space-x-1.5"
           >
             <Plus size={14} className="stroke-[2.5]" />
             <span className="hidden sm:inline">Add to Date</span>
@@ -253,11 +253,11 @@ export const CalendarView: React.FC = () => {
       </div>
 
       {/* Calendar Header Card */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
-        <h3 className={`text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight ${numberFontClass}`}>
+      <div className="px-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 className={`text-base font-bold text-slate-900 dark:text-white tracking-tight ${numberFontClass}`}>
           {headerTitle}
         </h3>
-        <span className="text-xs text-slate-400 font-medium hidden sm:inline">
+        <span className="text-xs text-slate-400 font-normal hidden sm:inline">
           Click any date or slot to record or inspect
         </span>
       </div>
@@ -265,9 +265,9 @@ export const CalendarView: React.FC = () => {
       {/* MAIN VIEW CONTENT */}
       {mode === 'month' && (
         /* MONTH VIEW */
-        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
           {/* Day of Week Labels */}
-          <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-center py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
+          <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-center py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px]">
             {dayNames.map(day => (
               <div key={day}>{day}</div>
             ))}
@@ -297,16 +297,16 @@ export const CalendarView: React.FC = () => {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className={`text-xs sm:text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center transition-all ${numberFontClass} ${
+                      <span className={`text-xs sm:text-sm font-semibold w-6 h-6 rounded-md flex items-center justify-center transition-colors ${numberFontClass} ${
                         isCurrentDay 
-                          ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-500/20 font-extrabold' 
+                          ? 'bg-emerald-600 text-white font-bold' 
                           : 'text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
                       }`}>
                         {dateObj.getDate()}
                       </span>
 
                       {totalMins > 0 && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 ${numberFontClass}`}>
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 ${numberFontClass}`}>
                           {formatDuration(totalMins)}
                         </span>
                       )}
@@ -334,7 +334,7 @@ export const CalendarView: React.FC = () => {
                         );
                       })}
                       {dayActs.length > 3 && (
-                        <span className={`text-[10px] font-semibold text-slate-400 pl-1 block ${numberFontClass}`}>
+                        <span className={`text-[10px] font-medium text-slate-400 pl-1 block ${numberFontClass}`}>
                           +{dayActs.length - 3} more
                         </span>
                       )}
@@ -361,7 +361,7 @@ export const CalendarView: React.FC = () => {
 
       {mode === 'week' && (
         /* WEEK VIEW (7 Columns) */
-        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
+        <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-x-auto">
           <div className="min-w-[700px]">
             {/* Week Header */}
             <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 divide-x divide-slate-200 dark:divide-slate-800">
@@ -373,15 +373,15 @@ export const CalendarView: React.FC = () => {
 
                 return (
                   <div key={dateStr} className="p-3 text-center">
-                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                    <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
                       {d.toLocaleDateString('en-US', { weekday: 'short' })}
                     </p>
-                    <p className={`text-base sm:text-lg font-black mt-1 inline-flex items-center justify-center w-8 h-8 rounded-full transition-all ${numberFontClass} ${
-                      isCurrent ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 ring-2 ring-emerald-500/20' : 'text-slate-800 dark:text-white'
+                    <p className={`text-base sm:text-lg font-bold mt-1 inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors ${numberFontClass} ${
+                      isCurrent ? 'bg-emerald-600 text-white' : 'text-slate-800 dark:text-white'
                     }`}>
                       {d.getDate()}
                     </p>
-                    <p className={`text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 ${numberFontClass}`}>
+                    <p className={`text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 ${numberFontClass}`}>
                       {totalMins > 0 ? formatDuration(totalMins) : '0h'}
                     </p>
                   </div>
@@ -413,14 +413,14 @@ export const CalendarView: React.FC = () => {
                           style={{
                             borderLeftColor: cat?.color || '#6366f1',
                           }}
-                          className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/60 border-l-4 hover:shadow-md transition-shadow cursor-pointer group"
+                          className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/60 border-l-2 hover:border-slate-300 dark:hover:border-slate-600 transition-colors cursor-pointer group"
                         >
-                          <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                             {act.title}
                           </p>
                           <div className={`flex items-center justify-between mt-1 text-[10px] text-slate-500 dark:text-slate-400 font-medium ${numberFontClass}`}>
                             <span>{act.startTime}</span>
-                            <span className="font-bold">{formatDuration(act.durationMinutes)}</span>
+                            <span className="font-semibold">{formatDuration(act.durationMinutes)}</span>
                           </div>
                         </div>
                       );
@@ -431,7 +431,7 @@ export const CalendarView: React.FC = () => {
                         e.stopPropagation();
                         openCreateActivityModal({ date: dateStr });
                       }}
-                      className="w-full py-2 text-[11px] font-semibold text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center justify-center space-x-1"
+                      className="w-full py-1.5 text-[11px] font-medium text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors flex items-center justify-center space-x-1"
                     >
                       <Plus size={12} />
                       <span>Log</span>
@@ -446,7 +446,7 @@ export const CalendarView: React.FC = () => {
 
       {mode === 'day' && (
         /* DAY VIEW (24h Vertical Hourly Schedule) */
-        <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-4">
+        <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4">
           <div className="max-w-3xl mx-auto divide-y divide-slate-100 dark:divide-slate-800/60">
             {hoursSlots.map(h => {
               const timeStr = `${String(h).padStart(2, '0')}:00`;
@@ -459,8 +459,8 @@ export const CalendarView: React.FC = () => {
               });
 
               return (
-                <div key={h} className="py-2 flex items-start space-x-4 group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 px-2 rounded-xl transition-colors">
-                  <span className={`w-16 text-right text-xs font-semibold text-slate-400 pt-1 tracking-tight ${numberFontClass}`}>
+                <div key={h} className="py-2 flex items-start space-x-4 group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 px-2 rounded-md transition-colors">
+                  <span className={`w-16 text-right text-xs font-medium text-slate-400 pt-1 tracking-tight ${numberFontClass}`}>
                     {formatTimeDisplay(timeStr, preferences.is24Hour)}
                   </span>
 
@@ -482,13 +482,13 @@ export const CalendarView: React.FC = () => {
                               key={act.id}
                               onClick={() => openEditActivityModal(act)}
                               style={{ borderLeftColor: cat?.color || '#6366f1' }}
-                              className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/60 border-l-4 hover:shadow-md cursor-pointer transition-shadow"
+                              className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/60 border-l-2 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer transition-colors"
                             >
                               <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-slate-900 dark:text-white">
+                                <span className="text-xs font-semibold text-slate-900 dark:text-white">
                                   {act.title}
                                 </span>
-                                <span className={`text-xs font-bold text-slate-700 dark:text-slate-300 ${numberFontClass}`}>
+                                <span className={`text-xs font-semibold text-slate-700 dark:text-slate-300 ${numberFontClass}`}>
                                   {formatDuration(act.durationMinutes)}
                                 </span>
                               </div>
@@ -514,28 +514,28 @@ export const CalendarView: React.FC = () => {
       {selectedDayActivities && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div 
-            className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 overflow-hidden max-h-[85vh] flex flex-col"
+            className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-5 overflow-hidden max-h-[85vh] flex flex-col"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-200 dark:border-slate-800">
               <div>
                 <h3 className={`text-base font-bold text-slate-900 dark:text-white ${numberFontClass}`}>
                   {formatDateDisplay(selectedDayActivities.date, 'full')}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  <span className={`font-bold ${numberFontClass}`}>{selectedDayActivities.acts.length}</span> activities logged •{' '}
-                  <span className={`font-bold ${numberFontClass}`}>{formatDuration(selectedDayActivities.acts.reduce((s, a) => s + a.durationMinutes, 0))}</span> total
+                  <span className={`font-semibold ${numberFontClass}`}>{selectedDayActivities.acts.length}</span> activities logged •{' '}
+                  <span className={`font-semibold ${numberFontClass}`}>{formatDuration(selectedDayActivities.acts.reduce((s, a) => s + a.durationMinutes, 0))}</span> total
                 </p>
               </div>
               <button
                 onClick={() => setSelectedDayActivities(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-4 space-y-3">
+            <div className="flex-1 overflow-y-auto py-3.5 space-y-2.5">
               {selectedDayActivities.acts.length === 0 ? (
                 <div className="p-8 text-center text-xs text-slate-400">
                   No activities recorded on this date.
@@ -546,10 +546,10 @@ export const CalendarView: React.FC = () => {
                   return (
                     <div
                       key={act.id}
-                      className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3"
+                      className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3"
                     >
                       <div className="truncate">
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        <h4 className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                           {act.title}
                         </h4>
                         <p className={`text-[11px] text-slate-500 font-medium mt-0.5 ${numberFontClass}`}>
@@ -557,7 +557,7 @@ export const CalendarView: React.FC = () => {
                         </p>
                       </div>
                       <div className="flex items-center space-x-2 flex-shrink-0">
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 ${numberFontClass}`}>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 ${numberFontClass}`}>
                           {formatDuration(act.durationMinutes)}
                         </span>
                         <button
@@ -565,7 +565,7 @@ export const CalendarView: React.FC = () => {
                             setSelectedDayActivities(null);
                             openEditActivityModal(act);
                           }}
-                          className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                          className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded"
                         >
                           <Edit2 size={13} />
                         </button>
@@ -577,7 +577,7 @@ export const CalendarView: React.FC = () => {
                               acts: prev.acts.filter(a => a.id !== act.id)
                             } : null);
                           }}
-                          className="p-1 text-slate-400 hover:text-rose-500"
+                          className="p-1 text-slate-400 hover:text-rose-500 rounded"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -595,7 +595,7 @@ export const CalendarView: React.FC = () => {
                   setSelectedDayActivities(null);
                   openCreateActivityModal({ date: targetDate });
                 }}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md flex items-center space-x-1.5"
+                className="px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center space-x-1.5"
               >
                 <Plus size={14} />
                 <span>Add Activity to this Date</span>

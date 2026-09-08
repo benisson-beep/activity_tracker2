@@ -146,39 +146,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
               openCreateActivityModal();
               onCloseMobile();
             }}
-            className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition-all whitespace-nowrap animate-fade-in"
+            className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors whitespace-nowrap animate-fade-in"
           >
-            <Plus size={16} className="stroke-[2.5] flex-shrink-0" />
+            <Plus size={15} className="stroke-[2.5] flex-shrink-0" />
             <span className="truncate">Record Activity</span>
-            <kbd className="ml-auto text-[10px] font-mono opacity-70 bg-emerald-700/60 px-1 rounded">N</kbd>
+            <kbd className="ml-auto text-[10px] font-mono opacity-75 bg-emerald-700/60 px-1 rounded">N</kbd>
           </button>
         ) : (
           <button
             onClick={() => openCreateActivityModal()}
-            className="w-full h-10 flex items-center justify-center rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-950/40 active:scale-95 transition-all"
+            className="w-full h-9 flex items-center justify-center rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors"
             title="Record Activity (N)"
           >
-            <Plus size={18} className="stroke-[2.5]" />
+            <Plus size={16} className="stroke-[2.5]" />
           </button>
         )}
       </div>
 
       {/* Navigation List */}
-      <nav className="flex-1 px-2.5 py-1 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-2 py-1 space-y-0.5 overflow-y-auto">
         {navItems.map(item => {
           const isActive = currentView === item.id;
           return (
             <button
               key={item.id}
               onClick={() => handleNavClick(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all group ${
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors group ${
                 isActive
-                  ? 'bg-emerald-600/15 text-emerald-400 border border-emerald-500/20 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80 border border-transparent'
+                  ? 'bg-slate-900 text-emerald-400 border border-emerald-500/30'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
               }`}
               title={item.label}
             >
-              <div className="flex items-center space-x-3 truncate">
+              <div className="flex items-center space-x-2.5 truncate">
                 <span className={`transition-colors flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-slate-200'}`}>
                   {item.icon}
                 </span>
@@ -190,15 +190,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {isExpanded && (
                 <div className="flex items-center space-x-1.5 ml-2 flex-shrink-0 animate-fade-in">
                   {item.badge !== undefined && (
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
                       item.id === 'timer' && timerState.isRunning
-                        ? 'bg-emerald-500 text-slate-950 font-bold animate-pulse'
+                        ? 'bg-emerald-500 text-slate-950 font-bold'
                         : 'bg-slate-800 text-slate-400'
                     }`}>
                       {item.badge}
                     </span>
                   )}
-                  <kbd className="hidden lg:inline-block text-[9px] font-mono text-slate-400/80 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <kbd className="hidden lg:inline-block text-[9px] font-mono text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
                     {item.shortcut}
                   </kbd>
                 </div>
@@ -209,64 +209,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* User Card & Actions in Footer */}
-      <div className="p-3 border-t border-slate-800/80 space-y-2.5">
+      <div className="p-3 border-t border-slate-800/80">
         {isExpanded ? (
-          <div className="space-y-2.5 animate-fade-in">
-            <div className="flex items-center justify-between px-1">
+          <div className="animate-fade-in">
+            <div className="flex items-center justify-between px-0.5">
               <div className="flex items-center space-x-2 truncate">
                 <img
                   src={currentUser.avatar}
                   alt={currentUser.name}
-                  className="w-6 h-6 rounded-full object-cover ring-1 ring-emerald-500/40 flex-shrink-0"
+                  className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-700 flex-shrink-0"
                 />
                 <div className="truncate whitespace-nowrap">
                   <p className="text-[11px] font-semibold text-slate-300 truncate">{currentUser.name}</p>
-                  <p className="text-[10px] text-emerald-400 capitalize">{currentUser.plan} plan</p>
+                  <p className="text-[10px] text-slate-500 capitalize">{currentUser.plan} plan</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-1 flex-shrink-0">
+              <div className="flex items-center space-x-0.5 flex-shrink-0">
                 <button 
                   onClick={onOpenHelp}
-                  className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                  className="text-slate-400 hover:text-slate-200 p-1 rounded-md hover:bg-slate-800 transition-colors"
                   title="Ask for Help & FAQs (?)"
                 >
                   <HelpCircle size={14} />
                 </button>
                 <button 
                   onClick={onOpenContact}
-                  className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                  className="text-slate-400 hover:text-slate-200 p-1 rounded-md hover:bg-slate-800 transition-colors"
                   title="Contact Support Team"
                 >
                   <Mail size={14} />
                 </button>
                 <button 
                   onClick={onLogout}
-                  className="text-rose-400/80 hover:text-rose-300 p-1 rounded-lg hover:bg-rose-950/40 transition-colors"
+                  className="text-rose-400/80 hover:text-rose-300 p-1 rounded-md hover:bg-rose-950/40 transition-colors"
                   title="Sign Out / Log Out"
                 >
                   <LogOut size={14} />
                 </button>
               </div>
             </div>
-
-            {/* Social media mini row */}
-            <div className="px-1 pt-1.5 border-t border-slate-800/50 flex items-center justify-between">
-              <span className="text-[9px] font-medium text-slate-500 uppercase tracking-wider">Connect</span>
-              <SocialIcons size="sm" />
-            </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center space-y-2">
+          <div className="flex flex-col items-center space-y-1.5">
             <button 
               onClick={onOpenHelp}
-              className="text-slate-400 hover:text-slate-200 p-2 rounded-xl hover:bg-slate-800 transition-colors"
+              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-md hover:bg-slate-800 transition-colors"
               title="Ask for Help & FAQs (?)"
             >
               <HelpCircle size={16} />
             </button>
             <button 
               onClick={onLogout}
-              className="text-rose-400 hover:text-rose-300 p-2 rounded-xl hover:bg-rose-950/40 transition-colors"
+              className="text-rose-400 hover:text-rose-300 p-1.5 rounded-md hover:bg-rose-950/40 transition-colors"
               title="Sign Out / Log Out"
             >
               <LogOut size={16} />

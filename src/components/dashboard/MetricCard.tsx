@@ -20,22 +20,22 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   badge,
 }) => {
   return (
-    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+    <div className="p-4 sm:p-5 flex flex-col justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
           {title}
         </span>
-        <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+        <span className="opacity-75 flex-shrink-0">
           {icon}
-        </div>
+        </span>
       </div>
 
-      <div className="mt-3 flex items-baseline space-x-2">
-        <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight font-mono">
+      <div className="mt-2.5 flex items-baseline space-x-2">
+        <span className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight font-mono">
           {value}
         </span>
         {badge && (
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+          <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
             {badge}
           </span>
         )}
@@ -43,13 +43,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
       <div className="mt-2 flex items-center justify-between text-xs">
         {subtitle && (
-          <span className="text-slate-500 dark:text-slate-400 truncate">
+          <span className="text-slate-500 dark:text-slate-400 truncate text-[11px]">
             {subtitle}
           </span>
         )}
 
         {deltaPercent !== undefined && (
-          <div className={`flex items-center space-x-1 font-semibold ${
+          <div className={`flex items-center space-x-1 font-mono text-[11px] font-medium ${
             deltaPercent > 0 
               ? 'text-emerald-600 dark:text-emerald-400' 
               : deltaPercent < 0 
@@ -57,13 +57,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({
               : 'text-slate-400'
           }`}>
             {deltaPercent > 0 ? (
-              <TrendingUp size={13} />
+              <TrendingUp size={12} />
             ) : deltaPercent < 0 ? (
-              <TrendingDown size={13} />
+              <TrendingDown size={12} />
             ) : (
-              <Minus size={13} />
+              <Minus size={12} />
             )}
-            <span>{deltaPercent > 0 ? `+${deltaPercent}%` : `${deltaPercent}%`} vs yesterday</span>
+            <span>{deltaPercent > 0 ? `+${deltaPercent}%` : `${deltaPercent}%`}</span>
           </div>
         )}
       </div>

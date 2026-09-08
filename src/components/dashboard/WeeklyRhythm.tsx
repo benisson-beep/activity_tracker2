@@ -11,7 +11,7 @@ export const WeeklyRhythm: React.FC<WeeklyRhythmProps> = ({ days }) => {
   const maxHours = Math.max(8, ...days.map(d => d.hours));
 
   return (
-    <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+    <div className="p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -34,17 +34,17 @@ export const WeeklyRhythm: React.FC<WeeklyRhythmProps> = ({ days }) => {
           return (
             <div key={d.date} className="flex-1 flex flex-col items-center h-full justify-end group">
               {/* Tooltip on hover */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity mb-2 px-2 py-1 rounded bg-slate-900 dark:bg-slate-800 text-[10px] text-white font-mono pointer-events-none shadow-lg whitespace-nowrap z-10">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity mb-2 px-2 py-1 rounded bg-slate-900 dark:bg-slate-800 text-[10px] text-white font-mono pointer-events-none shadow-md whitespace-nowrap z-10">
                 {formatDuration(d.minutes)} ({d.count} acts)
               </div>
 
               {/* Bar */}
-              <div className="w-full max-w-[36px] bg-slate-100 dark:bg-slate-800/80 rounded-t-xl overflow-hidden relative flex items-end justify-center h-32">
+              <div className="w-full max-w-[36px] bg-slate-100 dark:bg-slate-800/80 rounded-t-sm overflow-hidden relative flex items-end justify-center h-32">
                 <div
                   style={{ height: `${heightPct}%` }}
-                  className={`w-full rounded-t-xl transition-all duration-500 ${
+                  className={`w-full rounded-t-sm transition-all duration-300 ${
                     d.isToday
-                      ? 'bg-gradient-to-t from-emerald-600 to-teal-400 shadow-md shadow-emerald-500/20'
+                      ? 'bg-emerald-500'
                       : d.hours > 0
                       ? 'bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600'
                       : 'bg-transparent'
