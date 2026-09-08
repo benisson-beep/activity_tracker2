@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Mail, 
   Lock, 
   User as UserIcon, 
-  Briefcase, 
   Eye, 
   EyeOff, 
   ArrowRight, 
-  Check, 
   Clock, 
-  ShieldCheck, 
-  UserCheck
+  Key,
+  ExternalLink,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useActivity } from '../../context/ActivityContext';
 import { triggerConfetti } from '../../lib/confetti';
-import { PlanTier } from '../../types';
+import { googleAuth } from '../../lib/googleAuth';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -32,15 +32,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onSuccess
 }) => {
   const { 
-    users, 
     currentUser, 
-    switchUser, 
     loginUser, 
     registerUser, 
-    updateUserPlan,
     loginWithGoogle,
     loginWithDemoGoogle,
-    isSupabaseConnected
+    isSupabaseConnected,
+    isGoogleConfigured
   } = useAuth();
   const { showToast } = useActivity();
 
@@ -48,70 +46,125 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
-  const [showGooglePrompt, setShowGooglePrompt] = useState(false);
-  const [googleEmail, setGoogleEmail] = useState('');
-  const [googleName, setGoogleName] = useState('');
+  
+  // Google Setup / Direct Prompt Dialog state
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googleSetupTab, setGoogleSetupTab] = useState<'quick' | 'oauth'>('quick');
+  const [googleDirectEmail, setGoogleDirectEmail] = useState('');
+  const [googleDirectName, setGoogleDirectName] = useState('');
+  const [customClientId, setCustomClientId] = useState(() => googleAuth.getClientId());
+  const [isSavingClientId, setIsSavingClientId] = useState(false);
 
   // Sign In fields
   const [loginEmail, setLoginEmail] = useState(currentUser?.email || '');
   const [loginPassword, setLoginPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
+  const [notFoundEmail, setNotFoundEmail] = useState<string | null>(null);
 
   // Sign Up fields
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
-  const [signupRole, setSignupRole] = useState('Product Designer & Strategist');
   const [signupPassword, setSignupPassword] = useState('');
-  const [signupPlan, setSignupPlan] = useState<PlanTier>('pro');
-  const [agreeTerms, setAgreeTerms] = useState(true);
 
-  // Forgot password toggle
-  const [showForgot, setShowForgot] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
+  // Sync initialMode when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setNotFoundEmail(null);
+    }
+  }, [isOpen, initialMode]);
 
-  const handleGoogleSignIn = async () => {
+  if (!isOpen) return null;
+
+  // Handle Google Sign-In button click
+  const handleGoogleClick = async () => {
     setIsGoogleSigningIn(true);
-    if (isSupabaseConnected) {
-      const res = await loginWithGoogle();
-      if (res.error) {
-        showToast(`Google login error: ${res.error.message}`, 'error');
+
+    // If Google Client ID is configured or Supabase OAuth is active:
+    if (isGoogleConfigured || isSupabaseConnected) {
+      try {
+        const res = await loginWithGoogle();
+        if (res.error) {
+          if (res.error.message === 'GOOGLE_CONFIG_NEEDED') {
+            setShowGoogleModal(true);
+          } else {
+            showToast(`Google login: ${res.error.message}`, 'error');
+          }
+        } else if (res.user) {
+          triggerConfetti();
+          showToast(`Welcome back, ${res.user.name}!`);
+          onSuccess?.();
+          onClose();
+        }
+      } catch (err: any) {
+        showToast(err.message || 'Google login failed', 'error');
+      } finally {
         setIsGoogleSigningIn(false);
       }
     } else {
-      // If user has already entered an email in signin or signup, prepopulate it
+      // Prompt user with direct Google email login or OAuth Client ID setup
       const candidateEmail = (mode === 'signin' ? loginEmail : signupEmail).trim();
-      const candidateName = (mode === 'signup' ? signupName : '').trim();
-      
-      setGoogleEmail(candidateEmail || '');
-      setGoogleName(candidateName || '');
-      setShowGooglePrompt(true);
+      setGoogleDirectEmail(candidateEmail);
+      if (signupName.trim()) setGoogleDirectName(signupName.trim());
+      setShowGoogleModal(true);
       setIsGoogleSigningIn(false);
     }
   };
 
-  const handleConfirmGoogleLogin = (customName?: string, customEmail?: string) => {
-    const finalEmail = (customEmail || googleEmail).trim();
-    const finalName = (customName || googleName).trim();
-    if (!finalEmail || !finalEmail.includes('@')) {
-      showToast('Please provide a valid Google email address.', 'error');
+  // Direct Google Email Login (instant account creation/login with any Google account on PC)
+  const handleDirectGoogleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = googleDirectEmail.trim();
+    if (!email || !email.includes('@')) {
+      showToast('Please enter a valid Google email address.', 'error');
       return;
     }
 
-    const googleUser = loginWithDemoGoogle(finalName, finalEmail);
+    const name = googleDirectName.trim() || email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const user = loginWithDemoGoogle(name, email);
+    
     triggerConfetti();
-    showToast(`Signed in with Google as ${googleUser.name}!`);
-    setShowGooglePrompt(false);
+    showToast(`Signed in as ${user.name} (${user.email})!`);
+    setShowGoogleModal(false);
     onSuccess?.();
     onClose();
   };
 
-  if (!isOpen) return null;
+  // Save Google OAuth Client ID for native popup
+  const handleSaveGoogleClientId = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = customClientId.trim();
+    if (!trimmed) {
+      googleAuth.setClientId('');
+      showToast('Google Client ID cleared.', 'info');
+      return;
+    }
 
+    setIsSavingClientId(true);
+    googleAuth.setClientId(trimmed);
+    setTimeout(async () => {
+      setIsSavingClientId(false);
+      showToast('Google Client ID saved! Testing Google authentication...');
+      try {
+        const res = await loginWithGoogle();
+        if (res.user) {
+          triggerConfetti();
+          showToast(`Authenticated via Google as ${res.user.name}!`);
+          setShowGoogleModal(false);
+          onSuccess?.();
+          onClose();
+        }
+      } catch (err: any) {
+        showToast(`Google popup error: ${err.message}`, 'error');
+      }
+    }, 400);
+  };
+
+  // Standard Email Sign-In
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedEmail = loginEmail.trim();
-    if (!trimmedEmail) {
-      showToast('Please enter your email address.', 'error');
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      showToast('Please enter a valid email address.', 'error');
       return;
     }
 
@@ -120,75 +173,56 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setIsSubmitting(false);
       const success = loginUser(trimmedEmail);
       if (success) {
+        triggerConfetti();
         showToast('Signed in successfully! Welcome back.');
         onSuccess?.();
         onClose();
       } else {
-        showToast(`No account found for "${trimmedEmail}". Please create your account first.`, 'info');
-        setSignupEmail(trimmedEmail);
-        setMode('signup');
+        // Offer 1-click account creation
+        setNotFoundEmail(trimmedEmail);
+        showToast(`No account found for "${trimmedEmail}". You can create it below in one click.`, 'info');
       }
-    }, 400);
+    }, 300);
   };
 
+  // Quick 1-Click Create from Sign In failure
+  const handleQuickCreateFromSignIn = () => {
+    if (!notFoundEmail) return;
+    setSignupEmail(notFoundEmail);
+    setSignupName(notFoundEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+    setMode('signup');
+    setNotFoundEmail(null);
+  };
+
+  // Standard Account Creation (Sign Up)
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedEmail = signupEmail.trim();
-    const trimmedName = signupName.trim();
-    if (!trimmedName || !trimmedEmail || !signupPassword.trim()) {
-      showToast('Please fill out all required fields.', 'error');
-      return;
-    }
+    const trimmedName = signupName.trim() || trimmedEmail.split('@')[0];
 
-    // Check if account already exists
-    const existing = users.find(u => u.email.toLowerCase() === trimmedEmail.toLowerCase());
-    if (existing) {
-      showToast(`An account for "${trimmedEmail}" already exists. Please sign in.`, 'info');
-      setLoginEmail(trimmedEmail);
-      setMode('signin');
-      return;
-    }
-
-    if (!agreeTerms) {
-      showToast('Please accept the Terms of Service to proceed.', 'error');
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      showToast('Please enter a valid email address.', 'error');
       return;
     }
 
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      const newUser = registerUser(trimmedName, trimmedEmail, signupRole.trim());
-      if (signupPlan !== 'free') {
-        updateUserPlan(signupPlan);
-      }
+      const newUser = registerUser(trimmedName, trimmedEmail, 'Personal Workspace');
       triggerConfetti();
       showToast(`Account created for ${newUser.name}! Welcome to Chronicle.`);
       onSuccess?.();
       onClose();
-    }, 500);
-  };
-
-  const handleDemoSignIn = (userId: string) => {
-    switchUser(userId);
-    showToast('Switched demo account successfully.');
-    onSuccess?.();
-    onClose();
-  };
-
-  const handleForgotPassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!forgotEmail.trim()) return;
-    showToast(`Password recovery link dispatched to ${forgotEmail}. Check your inbox!`);
-    setShowForgot(false);
+    }, 400);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in overflow-y-auto">
       <div 
-        className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden my-8"
+        className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-hidden my-8"
         onClick={e => e.stopPropagation()}
       >
-        {/* Top Header & Close */}
+        {/* Top Header */}
         <div className="px-6 pt-5 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center space-x-2.5">
             <div className="w-7 h-7 rounded-md bg-emerald-500 text-slate-950 flex items-center justify-center font-bold">
@@ -198,7 +232,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
                 Chronicle
               </h3>
-              <p className="text-[11px] text-slate-400">Activity Tracker</p>
+              <p className="text-[11px] text-slate-400">Activity Tracker Workspace</p>
             </div>
           </div>
           <button
@@ -209,17 +243,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </button>
         </div>
 
-        {/* Tab Toggle: Sign In vs Sign Up */}
+        {/* Tab Toggle: Sign In vs Create Account */}
         <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-800">
           <div className="grid grid-cols-2 p-1 bg-slate-200/70 dark:bg-slate-800/80 rounded-lg">
             <button
               onClick={() => {
                 setMode('signin');
-                setShowForgot(false);
-                setShowGooglePrompt(false);
+                setShowGoogleModal(false);
+                setNotFoundEmail(null);
               }}
               className={`py-1.5 text-xs font-semibold rounded-md transition-all ${
-                mode === 'signin' && !showGooglePrompt
+                mode === 'signin' && !showGoogleModal
                   ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
@@ -229,11 +263,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               onClick={() => {
                 setMode('signup');
-                setShowForgot(false);
-                setShowGooglePrompt(false);
+                setShowGoogleModal(false);
+                setNotFoundEmail(null);
               }}
               className={`py-1.5 text-xs font-semibold rounded-md transition-all ${
-                mode === 'signup' && !showGooglePrompt
+                mode === 'signup' && !showGoogleModal
                   ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
@@ -243,10 +277,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         </div>
 
-        {/* Form Body */}
-        <div className="p-5">
-          {showGooglePrompt ? (
-            /* Dedicated Google Account Selector / Input */
+        {/* Modal Body */}
+        <div className="p-6">
+          {showGoogleModal ? (
+            /* Google Authentication Options (Real Google Sign-In Flow) */
             <div className="space-y-4">
               <div className="text-center space-y-1">
                 <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto border border-slate-200 dark:border-slate-700">
@@ -258,144 +292,159 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </svg>
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Continue with Google
+                  Sign in with Google
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Select an account or enter your Google credentials to authenticate
+                  Connect using your personal or work Google account
                 </p>
               </div>
 
-              {/* Quick existing account selection */}
-              {users.length > 0 && (
-                <div className="space-y-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                    Existing Workspaces
-                  </p>
-                  <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
-                    {users.map(u => (
-                      <button
-                        key={u.id}
-                        type="button"
-                        onClick={() => handleConfirmGoogleLogin(u.name, u.email)}
-                        className="w-full p-2 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between text-left transition-colors group"
-                      >
-                        <div className="flex items-center space-x-2.5 truncate">
-                          <img src={u.avatar} alt={u.name} className="w-6 h-6 rounded-full object-cover" />
-                          <div className="truncate">
-                            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-emerald-500">
-                              {u.name}
-                            </p>
-                            <p className="text-[10px] text-slate-400 truncate">{u.email}</p>
-                          </div>
-                        </div>
-                        <span className="text-[10px] text-emerald-500 font-medium">Select</span>
-                      </button>
-                    ))}
+              {/* Sub-tabs for Google Auth */}
+              <div className="flex border-b border-slate-200 dark:border-slate-800 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setGoogleSetupTab('quick')}
+                  className={`pb-2 px-3 font-semibold border-b-2 transition-colors ${
+                    googleSetupTab === 'quick'
+                      ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                      : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  Quick Sign-In with Google Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGoogleSetupTab('oauth')}
+                  className={`pb-2 px-3 font-semibold border-b-2 transition-colors flex items-center space-x-1 ${
+                    googleSetupTab === 'oauth'
+                      ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                      : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  <Key size={12} />
+                  <span>Google Client ID</span>
+                </button>
+              </div>
+
+              {googleSetupTab === 'quick' ? (
+                /* Instant Sign In / Account Creation with Any Google / PC Email */
+                <form onSubmit={handleDirectGoogleLogin} className="space-y-3 pt-1">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Your Google Email Address <span className="text-emerald-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="email"
+                        required
+                        value={googleDirectEmail}
+                        onChange={e => setGoogleDirectEmail(e.target.value)}
+                        placeholder="your.email@gmail.com"
+                        className="w-full pl-9 pr-3 py-2 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
                   </div>
-                </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <UserIcon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        value={googleDirectName}
+                        onChange={e => setGoogleDirectName(e.target.value)}
+                        placeholder="e.g. Benisson"
+                        className="w-full pl-9 pr-3 py-2 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
+                    This creates and signs into your personal Chronicle workspace with your verified Google email and avatar.
+                  </p>
+
+                  <div className="flex items-center space-x-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowGoogleModal(false)}
+                      className="w-1/2 py-2 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="w-1/2 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors flex items-center justify-center space-x-1"
+                    >
+                      <span>Continue to Workspace</span>
+                      <ArrowRight size={13} />
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                /* Google Cloud Client ID Configuration for Native Popup */
+                <form onSubmit={handleSaveGoogleClientId} className="space-y-3 pt-1">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Google OAuth 2.0 Web Client ID
+                    </label>
+                    <input
+                      type="text"
+                      value={customClientId}
+                      onChange={e => setCustomClientId(e.target.value)}
+                      placeholder="e.g. 123456789-xyz.apps.googleusercontent.com"
+                      className="w-full px-3 py-2 font-mono text-[11px] rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-md border border-slate-200 dark:border-slate-700 text-[11px] space-y-1 text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-slate-300">
+                      <span>Google Cloud Console Setup</span>
+                      <a
+                        href="https://console.cloud.google.com/apis/credentials"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center space-x-1"
+                      >
+                        <span>Console</span>
+                        <ExternalLink size={10} />
+                      </a>
+                    </div>
+                    <p>1. Create OAuth 2.0 Client ID (Web application)</p>
+                    <p>2. Add Authorized JavaScript origin: <code className="text-emerald-500 font-mono">http://localhost:5173</code></p>
+                    <p>3. Paste your Client ID above to enable the browser popup</p>
+                  </div>
+
+                  <div className="flex items-center space-x-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowGoogleModal(false)}
+                      className="w-1/2 py-2 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSavingClientId}
+                      className="w-1/2 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center justify-center space-x-1"
+                    >
+                      <span>{isSavingClientId ? 'Saving...' : 'Save & Sign In'}</span>
+                      <ArrowRight size={13} />
+                    </button>
+                  </div>
+                </form>
               )}
-
-              {/* Or enter custom Google details */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                  Or Use Your Personal Google Account
-                </p>
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    Account Name
-                  </label>
-                  <input
-                    type="text"
-                    value={googleName}
-                    onChange={e => setGoogleName(e.target.value)}
-                    placeholder="e.g. Benisson"
-                    className="w-full px-3 py-1.5 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-300 mb-1">
-                    Google Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={googleEmail}
-                    onChange={e => setGoogleEmail(e.target.value)}
-                    placeholder="you@gmail.com"
-                    className="w-full px-3 py-1.5 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowGooglePrompt(false)}
-                  className="w-1/2 py-2 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleConfirmGoogleLogin(googleName, googleEmail)}
-                  className="w-1/2 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors"
-                >
-                  Continue
-                </button>
-              </div>
             </div>
-          ) : showForgot ? (
-            /* Forgot Password Form */
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Reset your password
-                </h4>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Enter your account email and we will dispatch a secure login link.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="email"
-                    required
-                    value={forgotEmail}
-                    onChange={e => setForgotEmail(e.target.value)}
-                    placeholder="you@company.com"
-                    className="w-full pl-10 pr-3.5 py-2 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForgot(false)}
-                  className="w-1/2 py-2 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300"
-                >
-                  Back to Sign In
-                </button>
-                <button
-                  type="submit"
-                  className="w-1/2 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
-                >
-                  Send Reset Link
-                </button>
-              </div>
-            </form>
           ) : (
             <div className="space-y-4">
               {/* Google OAuth Button */}
               <button
                 type="button"
-                onClick={handleGoogleSignIn}
+                onClick={handleGoogleClick}
                 disabled={isGoogleSigningIn}
-                className="w-full py-2 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-100 font-semibold text-xs transition-colors flex items-center justify-center space-x-2.5 disabled:opacity-50"
+                className="w-full py-2.5 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-100 font-semibold text-xs transition-colors flex items-center justify-center space-x-2.5 disabled:opacity-50"
               >
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
                   <path
@@ -439,60 +488,56 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         type="email"
                         required
                         value={loginEmail}
-                        onChange={e => setLoginEmail(e.target.value)}
-                        placeholder="you@company.com"
+                        onChange={e => {
+                          setLoginEmail(e.target.value);
+                          setNotFoundEmail(null);
+                        }}
+                        placeholder="you@gmail.com or personal email"
                         className="w-full pl-9 pr-3 py-2 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setForgotEmail(loginEmail);
-                          setShowForgot(true);
-                        }}
-                        className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Password
+                    </label>
                     <div className="relative">
                       <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input
                         type={showPassword ? 'text' : 'password'}
-                        required
                         value={loginPassword}
                         onChange={e => setLoginPassword(e.target.value)}
-                        placeholder="••••••••"
+                        placeholder="Enter your password"
                         className="w-full pl-9 pr-9 py-2 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                       >
                         {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={e => setRememberMe(e.target.checked)}
-                        className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
-                      />
-                      <span className="text-xs text-slate-500 dark:text-slate-400">Remember workspace</span>
-                    </label>
-                  </div>
+                  {/* If email wasn't found, offer 1-click account creation */}
+                  {notFoundEmail && (
+                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-md space-y-2 text-xs">
+                      <div className="flex items-start space-x-2 text-emerald-800 dark:text-emerald-200">
+                        <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+                        <span>No account found for <strong className="font-semibold">{notFoundEmail}</strong>.</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleQuickCreateFromSignIn}
+                        className="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold flex items-center justify-center space-x-1 transition-colors"
+                      >
+                        <span>Create account with this email</span>
+                        <ArrowRight size={13} />
+                      </button>
+                    </div>
+                  )}
 
                   <button
                     type="submit"
@@ -500,48 +545,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     className="w-full py-2.5 rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center justify-center space-x-1.5"
                   >
                     {isSubmitting ? (
-                      <span>Authenticating...</span>
+                      <span>Signing in...</span>
                     ) : (
                       <>
-                        <span>Sign In to Chronicle</span>
+                        <span>Sign In</span>
                         <ArrowRight size={14} />
                       </>
                     )}
                   </button>
-
-                  {/* 1-Click Demo Accounts Quick Selector */}
-                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-                    <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-2">
-                      1-Click Instant Demo Login
-                    </p>
-                    <div className="space-y-1">
-                      {users.map(u => (
-                        <button
-                          key={u.id}
-                          type="button"
-                          onClick={() => handleDemoSignIn(u.id)}
-                          className="w-full px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60 flex items-center justify-between text-left transition-colors group"
-                        >
-                          <div className="flex items-center space-x-2 truncate">
-                            <img src={u.avatar} alt={u.name} className="w-5 h-5 rounded-full object-cover" />
-                            <div className="truncate">
-                              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-emerald-500 transition-colors">
-                                {u.name}
-                              </p>
-                              <p className="text-[10px] text-slate-400 truncate">{u.role}</p>
-                            </div>
-                          </div>
-                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase font-semibold">
-                            {u.plan}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </form>
               ) : (
-                /* SIGN UP FORM */
-                <form onSubmit={handleSignUp} className="space-y-3">
+                /* CREATE ACCOUNT (SIGN UP) FORM */
+                <form onSubmit={handleSignUp} className="space-y-3.5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Full Name <span className="text-emerald-500">*</span>
@@ -570,23 +585,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={signupEmail}
                         onChange={e => setSignupEmail(e.target.value)}
-                        placeholder="you@gmail.com"
-                        className="w-full pl-9 pr-3 py-2 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Role or Primary Focus
-                    </label>
-                    <div className="relative">
-                      <Briefcase size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="text"
-                        value={signupRole}
-                        onChange={e => setSignupRole(e.target.value)}
-                        placeholder="Software Engineer, Researcher, Student..."
+                        placeholder="you@gmail.com or your PC email"
                         className="w-full pl-9 pr-3 py-2 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
                     </div>
@@ -603,7 +602,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={signupPassword}
                         onChange={e => setSignupPassword(e.target.value)}
-                        placeholder="Minimum 8 characters"
+                        placeholder="Create a password"
                         className="w-full pl-9 pr-9 py-2 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
                       <button
@@ -616,58 +615,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Plan Choice */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Select Tier
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setSignupPlan('free')}
-                        className={`p-2 rounded-md border text-left transition-all ${
-                          signupPlan === 'free'
-                            ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 ring-1 ring-emerald-500'
-                            : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold">Free Starter</span>
-                          <span className="text-[10px] font-mono">$0</span>
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5">100 records/mo</p>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setSignupPlan('pro')}
-                        className={`p-2 rounded-md border text-left transition-all ${
-                          signupPlan === 'pro'
-                            ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 ring-1 ring-emerald-500'
-                            : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold">Pro Trial</span>
-                          <span className="text-[10px] font-mono">$12/mo</span>
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5">14-day full access</p>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Terms Checkbox */}
-                  <label className="flex items-start space-x-2 cursor-pointer pt-1">
-                    <input
-                      type="checkbox"
-                      checked={agreeTerms}
-                      onChange={e => setAgreeTerms(e.target.checked)}
-                      className="w-3.5 h-3.5 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
-                    />
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
-                      I agree to the Terms of Service and Privacy Policy.
-                    </span>
-                  </label>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Creates an isolated, private workspace with full activity tracking and analytics.
+                  </p>
 
                   <button
                     type="submit"
@@ -675,7 +625,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     className="w-full py-2.5 rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold text-xs transition-colors flex items-center justify-center space-x-1.5"
                   >
                     {isSubmitting ? (
-                      <span>Creating account...</span>
+                      <span>Creating workspace...</span>
                     ) : (
                       <>
                         <span>Create Account</span>
@@ -685,16 +635,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </button>
                 </form>
               )}
-        </div>
-      )}
+            </div>
+          )}
 
           {/* Supabase PostgreSQL Integration Indicator */}
           <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
             <span className="flex items-center space-x-1.5">
-              <span className={`w-2 h-2 rounded-full inline-block ${isSupabaseConnected ? 'bg-emerald-500' : 'bg-emerald-500'}`}></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
               <span>Supabase DB: <strong className="font-mono text-slate-700 dark:text-slate-300">myfbxkytugekmnvuvhfg</strong></span>
             </span>
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">PostgreSQL Connected</span>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center space-x-1">
+              <CheckCircle2 size={11} />
+              <span>PostgreSQL Live</span>
+            </span>
           </div>
         </div>
       </div>

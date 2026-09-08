@@ -232,10 +232,10 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               </div>
 
-              {/* Persona Switcher Section */}
+              {/* Account Switcher Section */}
               <div className="py-2 border-b border-slate-100 dark:border-slate-800">
                 <p className="px-4 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Switch Persona Demo
+                  Switch Account
                 </p>
                 {users.map(u => (
                   <button

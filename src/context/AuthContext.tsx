@@ -2,16 +2,19 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, PlanTier } from '../types';
 import { storage } from '../lib/storage';
 import { supabase, signInWithGoogle, signOutSupabase, isSupabaseConfigured } from '../lib/supabase';
+import { googleAuth, GoogleUserProfile } from '../lib/googleAuth';
 
 interface AuthContextType {
   currentUser: User;
   users: User[];
   isAuthenticated: boolean;
   isSupabaseConnected: boolean;
+  isGoogleConfigured: boolean;
   switchUser: (userId: string) => void;
-  registerUser: (name: string, email: string, role?: string) => User;
+  registerUser: (name: string, email: string, role?: string, avatar?: string) => User;
   loginUser: (email: string) => boolean;
-  loginWithGoogle: () => Promise<{ error: Error | null }>;
+  loginWithGoogle: () => Promise<{ error: Error | null; user?: User }>;
+  loginWithGoogleProfile: (profile: GoogleUserProfile) => User;
   loginWithDemoGoogle: (name?: string, email?: string) => User;
   logoutUser: () => void;
   updateUserPlan: (plan: PlanTier) => void;
@@ -47,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name,
           email: sbUser.email || '',
           avatar,
-          role: 'Google Account User',
+          role: 'Personal Workspace',
           plan: 'free',
           onboarded: true,
           createdAt: new Date().toISOString(),
@@ -88,15 +91,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const registerUser = (name: string, email: string, role: string = 'Personal Explorer'): User => {
+  const registerUser = (
+    name: string, 
+    email: string, 
+    role: string = 'Personal Workspace',
+    customAvatar?: string
+  ): User => {
+    const trimmedEmail = email.trim();
+    const trimmedName = name.trim() || trimmedEmail.split('@')[0];
+    const avatar = customAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(trimmedName)}&background=10b981&color=fff&bold=true`;
+
+    // Check if user already exists
+    const existing = users.find(u => u.email.toLowerCase() === trimmedEmail.toLowerCase());
+    if (existing) {
+      setCurrentUserId(existing.id);
+      return existing;
+    }
+
     const newUser: User = {
       id: `user_${Date.now()}`,
-      name,
-      email,
-      avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
-      role,
+      name: trimmedName,
+      email: trimmedEmail,
+      avatar,
+      role: role.trim() || 'Personal Workspace',
       plan: 'free',
-      onboarded: false,
+      onboarded: true,
       createdAt: new Date().toISOString(),
     };
 
@@ -107,7 +126,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginUser = (email: string): boolean => {
-    const found = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const trimmed = email.trim().toLowerCase();
+    const found = users.find(u => u.email.toLowerCase() === trimmed);
     if (found) {
       setCurrentUserId(found.id);
       return true;
@@ -115,15 +135,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
-  const loginWithGoogle = async (): Promise<{ error: Error | null }> => {
-    return await signInWithGoogle();
+  const loginWithGoogleProfile = (profile: GoogleUserProfile): User => {
+    const existing = users.find(
+      u => (profile.email && u.email.toLowerCase() === profile.email.toLowerCase()) || u.id === profile.id
+    );
+
+    if (existing) {
+      const updated: User = {
+        ...existing,
+        name: profile.name || existing.name,
+        avatar: profile.avatar || existing.avatar,
+      };
+      storage.saveUser(updated);
+      setUsers(prev => prev.map(u => u.id === existing.id ? updated : u));
+      setCurrentUserId(existing.id);
+      return updated;
+    }
+
+    const newUser: User = {
+      id: `google_${profile.id || Date.now()}`,
+      name: profile.name,
+      email: profile.email,
+      avatar: profile.avatar || `https://lh3.googleusercontent.com/a/default-user=s96-c`,
+      role: 'Personal Workspace',
+      plan: 'free',
+      onboarded: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    storage.saveUser(newUser);
+    setUsers(prev => [...prev, newUser]);
+    setCurrentUserId(newUser.id);
+    return newUser;
+  };
+
+  const loginWithGoogle = async (): Promise<{ error: Error | null; user?: User }> => {
+    // 1. If Google Client ID is configured, use official Google Identity Services popup
+    if (googleAuth.isConfigured()) {
+      try {
+        const profile = await googleAuth.signInWithGooglePopup();
+        const user = loginWithGoogleProfile(profile);
+        return { error: null, user };
+      } catch (err: any) {
+        return { error: err instanceof Error ? err : new Error(String(err)) };
+      }
+    }
+
+    // 2. If Supabase is connected with an anon key, use Supabase OAuth redirect
+    if (isSupabaseConfigured()) {
+      const res = await signInWithGoogle();
+      return { error: res.error };
+    }
+
+    // 3. Neither is configured yet
+    return { 
+      error: new Error('GOOGLE_CONFIG_NEEDED') 
+    };
   };
 
   const loginWithDemoGoogle = (
     customName?: string,
     customEmail?: string
   ): User => {
-    const email = (customEmail || 'google.user@gmail.com').trim();
+    const email = (customEmail || 'user@gmail.com').trim();
     const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (existing) {
       setCurrentUserId(existing.id);
@@ -136,7 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name: derivedName,
       email,
       avatar: `https://lh3.googleusercontent.com/a/default-user=s96-c`,
-      role: 'Google Account User',
+      role: 'Personal Workspace',
       plan: 'free',
       onboarded: true,
       createdAt: new Date().toISOString(),
@@ -150,8 +224,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logoutUser = () => {
     signOutSupabase();
-    // Reset to default Alex Chen demo persona
-    setCurrentUserId('user_alex');
+    // Default to first user or keep existing
+    setCurrentUserId(users[0]?.id || 'user_alex');
   };
 
   const updateUserPlan = (plan: PlanTier) => {
@@ -173,10 +247,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         users,
         isAuthenticated: true,
         isSupabaseConnected: isSupabaseConfigured(),
+        isGoogleConfigured: googleAuth.isConfigured(),
         switchUser,
         registerUser,
         loginUser,
         loginWithGoogle,
+        loginWithGoogleProfile,
         loginWithDemoGoogle,
         logoutUser,
         updateUserPlan,
