@@ -13,6 +13,7 @@ interface AuthContextType {
   switchUser: (userId: string) => void;
   registerUser: (name: string, email: string, role?: string, avatar?: string) => User;
   loginUser: (email: string) => boolean;
+  loginOrCreateUser: (email: string, name?: string) => { user: User; isNew: boolean };
   loginWithGoogle: () => Promise<{ error: Error | null; user?: User }>;
   loginWithGoogleProfile: (profile: GoogleUserProfile) => User;
   loginWithDemoGoogle: (name?: string, email?: string) => User;
@@ -135,6 +136,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
+  const loginOrCreateUser = (email: string, name?: string): { user: User; isNew: boolean } => {
+    const trimmedEmail = email.trim();
+    const found = users.find(u => u.email.toLowerCase() === trimmedEmail.toLowerCase());
+    if (found) {
+      setCurrentUserId(found.id);
+      return { user: found, isNew: false };
+    }
+
+    const trimmedName = name?.trim() || trimmedEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const isGoogle = trimmedEmail.toLowerCase().includes('gmail.com');
+    const avatar = isGoogle
+      ? `https://lh3.googleusercontent.com/a/default-user=s96-c`
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(trimmedName)}&background=10b981&color=fff&bold=true`;
+
+    const newUser: User = {
+      id: `user_${Date.now()}`,
+      name: trimmedName,
+      email: trimmedEmail,
+      avatar,
+      role: 'Personal Workspace',
+      plan: 'free',
+      onboarded: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    storage.saveUser(newUser);
+    setUsers(prev => [...prev, newUser]);
+    setCurrentUserId(newUser.id);
+    return { user: newUser, isNew: true };
+  };
+
   const loginWithGoogleProfile = (profile: GoogleUserProfile): User => {
     const existing = users.find(
       u => (profile.email && u.email.toLowerCase() === profile.email.toLowerCase()) || u.id === profile.id
@@ -251,6 +283,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         switchUser,
         registerUser,
         loginUser,
+        loginOrCreateUser,
         loginWithGoogle,
         loginWithGoogleProfile,
         loginWithDemoGoogle,

@@ -11,7 +11,8 @@ import {
   Key,
   ExternalLink,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Globe
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useActivity } from '../../context/ActivityContext';
@@ -33,10 +34,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   const { 
     currentUser, 
-    loginUser, 
+    loginOrCreateUser,
     registerUser, 
     loginWithGoogle,
-    loginWithDemoGoogle,
     isSupabaseConnected,
     isGoogleConfigured
   } = useAuth();
@@ -58,7 +58,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Sign In fields
   const [loginEmail, setLoginEmail] = useState(currentUser?.email || '');
   const [loginPassword, setLoginPassword] = useState('');
-  const [notFoundEmail, setNotFoundEmail] = useState<string | null>(null);
 
   // Sign Up fields
   const [signupName, setSignupName] = useState('');
@@ -69,7 +68,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setMode(initialMode);
-      setNotFoundEmail(null);
     }
   }, [isOpen, initialMode]);
 
@@ -79,38 +77,35 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleGoogleClick = async () => {
     setIsGoogleSigningIn(true);
 
-    // If Google Client ID is configured or Supabase OAuth is active:
-    if (isGoogleConfigured || isSupabaseConnected) {
+    // If Google Client ID is configured:
+    if (isGoogleConfigured) {
       try {
         const res = await loginWithGoogle();
-        if (res.error) {
-          if (res.error.message === 'GOOGLE_CONFIG_NEEDED') {
-            setShowGoogleModal(true);
-          } else {
-            showToast(`Google login: ${res.error.message}`, 'error');
-          }
-        } else if (res.user) {
+        if (res.user) {
           triggerConfetti();
           showToast(`Welcome back, ${res.user.name}!`);
           onSuccess?.();
           onClose();
+          return;
+        } else if (res.error && res.error.message !== 'GOOGLE_CONFIG_NEEDED') {
+          showToast(`Google login: ${res.error.message}`, 'error');
         }
       } catch (err: any) {
         showToast(err.message || 'Google login failed', 'error');
       } finally {
         setIsGoogleSigningIn(false);
       }
-    } else {
-      // Prompt user with direct Google email login or OAuth Client ID setup
-      const candidateEmail = (mode === 'signin' ? loginEmail : signupEmail).trim();
-      setGoogleDirectEmail(candidateEmail);
-      if (signupName.trim()) setGoogleDirectName(signupName.trim());
-      setShowGoogleModal(true);
-      setIsGoogleSigningIn(false);
     }
+
+    // Direct Google authentication dialog
+    const candidateEmail = (mode === 'signin' ? loginEmail : signupEmail).trim();
+    setGoogleDirectEmail(candidateEmail);
+    if (signupName.trim()) setGoogleDirectName(signupName.trim());
+    setShowGoogleModal(true);
+    setIsGoogleSigningIn(false);
   };
 
-  // Direct Google Email Login (instant account creation/login with any Google account on PC)
+  // Direct Google Email Login (instant account creation / login with any Google email on PC)
   const handleDirectGoogleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const email = googleDirectEmail.trim();
@@ -119,14 +114,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    const name = googleDirectName.trim() || email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    const user = loginWithDemoGoogle(name, email);
-    
+    const { user, isNew } = loginOrCreateUser(email, googleDirectName.trim() || undefined);
     triggerConfetti();
-    showToast(`Signed in as ${user.name} (${user.email})!`);
+    if (isNew) {
+      showToast(`Google workspace created for ${user.name}!`);
+    } else {
+      showToast(`Signed in with Google as ${user.name}!`);
+    }
     setShowGoogleModal(false);
     onSuccess?.();
     onClose();
+  };
+
+  // Live Supabase OAuth Redirect attempt
+  const handleTrySupabaseOAuth = () => {
+    window.location.href = 'https://myfbxkytugekmnvuvhfg.supabase.co/auth/v1/authorize?provider=google';
   };
 
   // Save Google OAuth Client ID for native popup
@@ -159,7 +161,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }, 400);
   };
 
-  // Standard Email Sign-In
+  // Smart Email Sign-In (Creates or logs into the account with zero friction)
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedEmail = loginEmail.trim();
@@ -171,27 +173,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      const success = loginUser(trimmedEmail);
-      if (success) {
-        triggerConfetti();
-        showToast('Signed in successfully! Welcome back.');
-        onSuccess?.();
-        onClose();
+      const { user, isNew } = loginOrCreateUser(trimmedEmail);
+      triggerConfetti();
+      if (isNew) {
+        showToast(`Account created for ${user.name}! Welcome to Chronicle.`);
       } else {
-        // Offer 1-click account creation
-        setNotFoundEmail(trimmedEmail);
-        showToast(`No account found for "${trimmedEmail}". You can create it below in one click.`, 'info');
+        showToast(`Welcome back, ${user.name}!`);
       }
+      onSuccess?.();
+      onClose();
     }, 300);
-  };
-
-  // Quick 1-Click Create from Sign In failure
-  const handleQuickCreateFromSignIn = () => {
-    if (!notFoundEmail) return;
-    setSignupEmail(notFoundEmail);
-    setSignupName(notFoundEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
-    setMode('signup');
-    setNotFoundEmail(null);
   };
 
   // Standard Account Creation (Sign Up)
@@ -250,7 +241,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => {
                 setMode('signin');
                 setShowGoogleModal(false);
-                setNotFoundEmail(null);
               }}
               className={`py-1.5 text-xs font-semibold rounded-md transition-all ${
                 mode === 'signin' && !showGoogleModal
@@ -264,7 +254,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => {
                 setMode('signup');
                 setShowGoogleModal(false);
-                setNotFoundEmail(null);
               }}
               className={`py-1.5 text-xs font-semibold rounded-md transition-all ${
                 mode === 'signup' && !showGoogleModal
@@ -280,7 +269,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Modal Body */}
         <div className="p-6">
           {showGoogleModal ? (
-            /* Google Authentication Options (Real Google Sign-In Flow) */
+            /* Dedicated Google Authentication Dialog */
             <div className="space-y-4">
               <div className="text-center space-y-1">
                 <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto border border-slate-200 dark:border-slate-700">
@@ -292,10 +281,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </svg>
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Sign in with Google
+                  Continue with Google
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Connect using your personal or work Google account
+                  Instant sign in & account creation with your Google email
                 </p>
               </div>
 
@@ -310,7 +299,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                   }`}
                 >
-                  Quick Sign-In with Google Email
+                  Sign In with Google Email
                 </button>
                 <button
                   type="button"
@@ -322,12 +311,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   }`}
                 >
                   <Key size={12} />
-                  <span>Google Client ID</span>
+                  <span>Google Cloud Client ID</span>
                 </button>
               </div>
 
               {googleSetupTab === 'quick' ? (
-                /* Instant Sign In / Account Creation with Any Google / PC Email */
+                /* Instant Sign In / Account Creation with Any Google Email */
                 <form onSubmit={handleDirectGoogleLogin} className="space-y-3 pt-1">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
@@ -340,7 +329,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         value={googleDirectEmail}
                         onChange={e => setGoogleDirectEmail(e.target.value)}
-                        placeholder="your.email@gmail.com"
+                        placeholder="e.g. yourname@gmail.com"
                         className="w-full pl-9 pr-3 py-2 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
                     </div>
@@ -348,7 +337,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Full Name
+                      Full Name (Optional)
                     </label>
                     <div className="relative">
                       <UserIcon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -363,24 +352,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
 
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
-                    This creates and signs into your personal Chronicle workspace with your verified Google email and avatar.
+                    Instantly initializes and logs into your private workspace with your Google identity and avatar.
                   </p>
 
                   <div className="flex items-center space-x-2 pt-2">
                     <button
                       type="button"
                       onClick={() => setShowGoogleModal(false)}
-                      className="w-1/2 py-2 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      className="w-1/3 py-2 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
-                      Cancel
+                      Back
                     </button>
                     <button
                       type="submit"
-                      className="w-1/2 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors flex items-center justify-center space-x-1"
+                      className="w-2/3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors flex items-center justify-center space-x-1.5"
                     >
-                      <span>Continue to Workspace</span>
+                      <span>Sign In / Create Account</span>
                       <ArrowRight size={13} />
                     </button>
+                  </div>
+
+                  {/* Supabase OAuth Option */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={handleTrySupabaseOAuth}
+                      className="w-full py-1.5 px-2 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-center space-x-1.5 transition-colors"
+                    >
+                      <Globe size={12} className="text-emerald-500" />
+                      <span>Launch Supabase Google OAuth Redirect</span>
+                    </button>
+                    <p className="text-[10px] text-slate-400 text-center mt-1">
+                      Note: Requires Google provider enabled in your Supabase project dashboard.
+                    </p>
                   </div>
                 </form>
               ) : (
@@ -476,7 +480,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
 
               {mode === 'signin' ? (
-                /* SIGN IN FORM */
+                /* SMART SIGN IN FORM: NEVER FAILS - AUTO-CREATES IF NEW */
                 <form onSubmit={handleSignIn} className="space-y-3.5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
@@ -488,11 +492,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         type="email"
                         required
                         value={loginEmail}
-                        onChange={e => {
-                          setLoginEmail(e.target.value);
-                          setNotFoundEmail(null);
-                        }}
-                        placeholder="you@gmail.com or personal email"
+                        onChange={e => setLoginEmail(e.target.value)}
+                        placeholder="you@gmail.com or any email"
                         className="w-full pl-9 pr-3 py-2 rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
                     </div>
@@ -521,23 +522,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     </div>
                   </div>
 
-                  {/* If email wasn't found, offer 1-click account creation */}
-                  {notFoundEmail && (
-                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-md space-y-2 text-xs">
-                      <div className="flex items-start space-x-2 text-emerald-800 dark:text-emerald-200">
-                        <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
-                        <span>No account found for <strong className="font-semibold">{notFoundEmail}</strong>.</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleQuickCreateFromSignIn}
-                        className="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold flex items-center justify-center space-x-1 transition-colors"
-                      >
-                        <span>Create account with this email</span>
-                        <ArrowRight size={13} />
-                      </button>
-                    </div>
-                  )}
+                  <p className="text-[11px] text-slate-400">
+                    Entering your email will sign in, or automatically create your workspace if new.
+                  </p>
 
                   <button
                     type="submit"
@@ -548,7 +535,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       <span>Signing in...</span>
                     ) : (
                       <>
-                        <span>Sign In</span>
+                        <span>Sign In / Enter Workspace</span>
                         <ArrowRight size={14} />
                       </>
                     )}
@@ -628,7 +615,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       <span>Creating workspace...</span>
                     ) : (
                       <>
-                        <span>Create Account</span>
+                        <span>Create Account & Enter</span>
                         <ArrowRight size={14} />
                       </>
                     )}
