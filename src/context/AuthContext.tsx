@@ -24,56 +24,83 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [users, setUsers] = useState<User[]>(() => storage.getUsers());
   const [currentUserId, setCurrentUserId] = useState<string>(() => storage.getCurrentUserId());
   
-  const currentUser = users.find(u => u.id === currentUserId) || users[0];
+  // Resolve current active user; prioritize currentUserId, then any non-demo user, then users[0]
+  const currentUser = 
+    users.find(u => u.id === currentUserId) || 
+    users.find(u => !u.id.startsWith('user_alex')) || 
+    users[0];
 
   useEffect(() => {
     storage.setCurrentUserId(currentUserId);
   }, [currentUserId]);
 
   const handleSupabaseUser = (sbUser: any) => {
+    if (!sbUser) return;
+
     const meta = sbUser.user_metadata || {};
-    const name = meta.full_name || meta.name || sbUser.email?.split('@')[0] || 'Google User';
-    const avatar = meta.avatar_url || meta.picture || `https://lh3.googleusercontent.com/a/default-user=s96-c`;
-    const email = sbUser.email || '';
+    const email = (sbUser.email || meta.email || '').trim();
+    const name = (
+      meta.full_name || 
+      meta.name || 
+      meta.given_name || 
+      (email ? email.split('@')[0] : '') || 
+      'Google User'
+    ).trim();
+
+    const avatar = (
+      meta.avatar_url || 
+      meta.picture || 
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=10b981&color=fff&bold=true`
+    ).trim();
     
-    setUsers(prev => {
-      const existing = prev.find(
-        u => u.id === sbUser.id || (u.email && email && u.email.toLowerCase() === email.toLowerCase())
-      );
+    // Read current users from persistent storage
+    const allUsers = storage.getUsers();
+    const existingIndex = allUsers.findIndex(
+      u => u.id === sbUser.id || (email && u.email && u.email.toLowerCase() === email.toLowerCase())
+    );
 
-      if (existing) {
-        const updated: User = { 
-          ...existing, 
-          id: sbUser.id, 
-          name: name || existing.name, 
-          avatar: avatar || existing.avatar, 
-          email: email || existing.email 
-        };
-        storage.saveUser(updated);
-        return prev.map(u => (u.id === existing.id || u.id === sbUser.id) ? updated : u);
-      } else {
-        const newUser: User = {
-          id: sbUser.id,
-          name,
-          email,
-          avatar,
-          role: 'Personal Workspace',
-          plan: 'free',
-          onboarded: true,
-          createdAt: new Date().toISOString(),
-        };
-        storage.saveUser(newUser);
-        // Provision starter categories if new
-        storage.getCategories(newUser.id);
-        return [...prev, newUser];
+    let activeUser: User;
+
+    if (existingIndex >= 0) {
+      activeUser = { 
+        ...allUsers[existingIndex], 
+        id: sbUser.id, 
+        name: name || allUsers[existingIndex].name, 
+        avatar: avatar || allUsers[existingIndex].avatar, 
+        email: email || allUsers[existingIndex].email 
+      };
+      allUsers[existingIndex] = activeUser;
+    } else {
+      activeUser = {
+        id: sbUser.id,
+        name,
+        email,
+        avatar,
+        role: 'Personal Workspace',
+        plan: 'free',
+        onboarded: true,
+        createdAt: new Date().toISOString(),
+      };
+      // Place newly authenticated user at the front of the list
+      allUsers.unshift(activeUser);
+      // Provision starter categories for this new Google workspace
+      storage.getCategories(activeUser.id);
+    }
+
+    // Persist immediately to localStorage
+    storage.saveUser(activeUser);
+    storage.setCurrentUserId(activeUser.id);
+
+    // Update React state synchronously together
+    setUsers([...allUsers]);
+    setCurrentUserId(activeUser.id);
+
+    // Clean up OAuth fragment or search code from URL once session is safely established
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.hash.includes('access_token=') || url.search.includes('code=')) {
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
-    });
-
-    setCurrentUserId(sbUser.id);
-
-    // Clean up OAuth fragment in URL
-    if (typeof window !== 'undefined' && (window.location.hash || window.location.search.includes('code='))) {
-      window.history.replaceState({}, document.title, window.location.pathname);
     }
   };
 
@@ -81,16 +108,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!supabase) return;
 
-    // Check existing session
+    // 1. Handle PKCE authorization code in URL if returning from Google OAuth
+    if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      if (code) {
+        supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+          if (data?.session?.user) {
+            handleSupabaseUser(data.session.user);
+          }
+          if (error) {
+            console.error('PKCE exchangeCodeForSession error:', error);
+          }
+        });
+      }
+    }
+
+    // 2. Check active session (Implicit or existing session)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         handleSupabaseUser(session.user);
       }
     });
 
-    // Listen for auth state events (e.g. SIGNED_IN from OAuth callback)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
+    // 3. Listen for real-time auth events (SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user && (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION')) {
         handleSupabaseUser(session.user);
       }
     });
@@ -104,6 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const found = users.find(u => u.id === userId);
     if (found) {
       setCurrentUserId(userId);
+      storage.setCurrentUserId(userId);
     }
   };
 
@@ -117,10 +161,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const trimmedName = name.trim() || trimmedEmail.split('@')[0];
     const avatar = customAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(trimmedName)}&background=10b981&color=fff&bold=true`;
 
-    // Check if user already exists
-    const existing = users.find(u => u.email.toLowerCase() === trimmedEmail.toLowerCase());
+    const allUsers = storage.getUsers();
+    const existing = allUsers.find(u => u.email.toLowerCase() === trimmedEmail.toLowerCase());
     if (existing) {
       setCurrentUserId(existing.id);
+      storage.setCurrentUserId(existing.id);
       return existing;
     }
 
@@ -136,8 +181,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     storage.saveUser(newUser);
+    storage.setCurrentUserId(newUser.id);
     storage.getCategories(newUser.id);
-    setUsers(prev => [...prev, newUser]);
+    
+    setUsers(prev => [newUser, ...prev]);
     setCurrentUserId(newUser.id);
     return newUser;
   };
@@ -147,6 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const found = users.find(u => u.email.toLowerCase() === trimmed);
     if (found) {
       setCurrentUserId(found.id);
+      storage.setCurrentUserId(found.id);
       return true;
     }
     return false;
@@ -154,9 +202,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginOrCreateUser = (email: string, name?: string): { user: User; isNew: boolean } => {
     const trimmedEmail = email.trim();
-    const found = users.find(u => u.email.toLowerCase() === trimmedEmail.toLowerCase());
+    const allUsers = storage.getUsers();
+    const found = allUsers.find(u => u.email.toLowerCase() === trimmedEmail.toLowerCase());
     if (found) {
       setCurrentUserId(found.id);
+      storage.setCurrentUserId(found.id);
       return { user: found, isNew: false };
     }
 
@@ -178,8 +228,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     storage.saveUser(newUser);
+    storage.setCurrentUserId(newUser.id);
     storage.getCategories(newUser.id);
-    setUsers(prev => [...prev, newUser]);
+    
+    setUsers(prev => [newUser, ...prev]);
     setCurrentUserId(newUser.id);
     return { user: newUser, isNew: true };
   };
@@ -190,8 +242,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logoutUser = () => {
     signOutSupabase();
-    // Reset to default first persona
-    setCurrentUserId(users[0]?.id || 'user_alex');
+    // Default to first persona
+    const firstId = users[0]?.id || 'user_alex';
+    setCurrentUserId(firstId);
+    storage.setCurrentUserId(firstId);
   };
 
   const updateUserPlan = (plan: PlanTier) => {

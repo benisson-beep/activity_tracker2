@@ -1,17 +1,17 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const defaultUrl = 'https://myfbxkytugekmnvuvhfg.supabase.co';
-export const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || defaultUrl).trim();
-export const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim() ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15ZmJ4a3l0dWdla21udnV2aGZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAwMDAwMDAsImV4cCI6MjA1NTAwMDAwMH0.placeholder';
+export const supabaseUrl = (
+  import.meta.env.VITE_SUPABASE_URL || 'https://myfbxkytugekmnvuvhfg.supabase.co'
+).trim();
+
+// Use real project anon key as primary default to ensure immediate availability in all environments
+export const supabaseAnonKey = (
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15ZmJ4a3l0dWdla21udnV2aGZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTUxMDcsImV4cCI6MjEwNDM3MTEwN30.S_XWgafnUux5sv6pApQhOqNrO61yxdBSdd55no73Bjs'
+).trim();
 
 export const isSupabaseConfigured = (): boolean => {
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  return Boolean(
-    envKey && 
-    envKey !== 'your_supabase_anon_key_here' && 
-    envKey.length > 20
-  );
+  return Boolean(supabaseUrl && supabaseAnonKey && supabaseAnonKey.length > 20);
 };
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
@@ -19,6 +19,7 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    flowType: 'pkce',
   },
 });
 
