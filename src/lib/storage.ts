@@ -37,6 +37,10 @@ export const storage = {
     return DEMO_USERS;
   },
 
+  setUsers(users: User[]): void {
+    localStorage.setItem(`${PREFIX}users`, JSON.stringify(users));
+  },
+
   saveUser(user: User): void {
     const users = this.getUsers();
     const existingIndex = users.findIndex(u => u.id === user.id);

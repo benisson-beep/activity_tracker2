@@ -84,8 +84,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       storage.getCategories(activeUser.id);
     }
 
+    // Migrate any legacy data from previous local manual user id if needed
+    if (existingIndex >= 0) {
+      const oldId = allUsers[existingIndex].id;
+      if (oldId && oldId !== activeUser.id) {
+        const oldCats = localStorage.getItem(`chronicle_${oldId}_categories`);
+        if (oldCats && !localStorage.getItem(`chronicle_${activeUser.id}_categories`)) {
+          localStorage.setItem(`chronicle_${activeUser.id}_categories`, oldCats);
+        }
+        const oldActs = localStorage.getItem(`chronicle_${oldId}_activities`);
+        if (oldActs && !localStorage.getItem(`chronicle_${activeUser.id}_activities`)) {
+          localStorage.setItem(`chronicle_${activeUser.id}_activities`, oldActs);
+        }
+      }
+    }
+
     // Persist immediately to localStorage
-    storage.saveUser(activeUser);
+    storage.setUsers(allUsers);
     storage.setCurrentUserId(activeUser.id);
 
     // Update React state synchronously together
@@ -105,33 +120,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!supabase) return;
 
-    // 1. Handle PKCE authorization code in URL if returning from Google OAuth
-    if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-      if (code) {
-        supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
-          if (data?.session?.user) {
-            handleSupabaseUser(data.session.user);
-          }
-          if (error) {
-            console.warn('[Auth] exchangeCodeForSession:', error.message);
-          }
-        });
+    // 1. Check existing active session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.warn('[Auth] getSession:', error.message);
       }
-    }
-
-    // 2. Check active session (Implicit or existing session)
-    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         handleSupabaseUser(session.user);
       }
     });
 
-    // 3. Listen for real-time auth events (SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED)
+    // 2. Listen for real-time auth events (SIGNED_IN handles PKCE callback completion, TOKEN_REFRESHED, USER_UPDATED)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[Auth] onAuthStateChange event:', event, session?.user?.email);
-      if (session?.user) {
+      if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED')) {
         handleSupabaseUser(session.user);
       }
     });
