@@ -2,21 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, PlanTier } from '../types';
 import { storage } from '../lib/storage';
 import { supabase, signInWithGoogle, signOutSupabase, isSupabaseConfigured } from '../lib/supabase';
-import { googleAuth, GoogleUserProfile } from '../lib/googleAuth';
 
 interface AuthContextType {
   currentUser: User;
   users: User[];
   isAuthenticated: boolean;
   isSupabaseConnected: boolean;
-  isGoogleConfigured: boolean;
   switchUser: (userId: string) => void;
   registerUser: (name: string, email: string, role?: string, avatar?: string) => User;
   loginUser: (email: string) => boolean;
   loginOrCreateUser: (email: string, name?: string) => { user: User; isNew: boolean };
-  loginWithGoogle: () => Promise<{ error: Error | null; user?: User }>;
-  loginWithGoogleProfile: (profile: GoogleUserProfile) => User;
-  loginWithDemoGoogle: (name?: string, email?: string) => User;
+  loginWithGoogle: () => Promise<{ error: Error | null }>;
   logoutUser: () => void;
   updateUserPlan: (plan: PlanTier) => void;
   completeOnboarding: () => void;
@@ -38,18 +34,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const meta = sbUser.user_metadata || {};
     const name = meta.full_name || meta.name || sbUser.email?.split('@')[0] || 'Google User';
     const avatar = meta.avatar_url || meta.picture || `https://lh3.googleusercontent.com/a/default-user=s96-c`;
+    const email = sbUser.email || '';
     
     setUsers(prev => {
-      const existing = prev.find(u => u.id === sbUser.id || (u.email && sbUser.email && u.email.toLowerCase() === sbUser.email.toLowerCase()));
+      const existing = prev.find(
+        u => u.id === sbUser.id || (u.email && email && u.email.toLowerCase() === email.toLowerCase())
+      );
+
       if (existing) {
-        const updated: User = { ...existing, id: sbUser.id, name, avatar, email: sbUser.email || existing.email };
+        const updated: User = { 
+          ...existing, 
+          id: sbUser.id, 
+          name: name || existing.name, 
+          avatar: avatar || existing.avatar, 
+          email: email || existing.email 
+        };
         storage.saveUser(updated);
         return prev.map(u => (u.id === existing.id || u.id === sbUser.id) ? updated : u);
       } else {
         const newUser: User = {
           id: sbUser.id,
           name,
-          email: sbUser.email || '',
+          email,
           avatar,
           role: 'Personal Workspace',
           plan: 'free',
@@ -57,23 +63,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           createdAt: new Date().toISOString(),
         };
         storage.saveUser(newUser);
+        // Provision starter categories if new
+        storage.getCategories(newUser.id);
         return [...prev, newUser];
       }
     });
 
     setCurrentUserId(sbUser.id);
+
+    // Clean up OAuth fragment in URL
+    if (typeof window !== 'undefined' && (window.location.hash || window.location.search.includes('code='))) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   };
 
-  // Listen to Supabase Auth state changes
+  // Listen to Supabase Auth state changes & OAuth redirect callbacks
   useEffect(() => {
     if (!supabase) return;
 
+    // Check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         handleSupabaseUser(session.user);
       }
     });
 
+    // Listen for auth state events (e.g. SIGNED_IN from OAuth callback)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         handleSupabaseUser(session.user);
@@ -121,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     storage.saveUser(newUser);
+    storage.getCategories(newUser.id);
     setUsers(prev => [...prev, newUser]);
     setCurrentUserId(newUser.id);
     return newUser;
@@ -162,101 +178,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     storage.saveUser(newUser);
+    storage.getCategories(newUser.id);
     setUsers(prev => [...prev, newUser]);
     setCurrentUserId(newUser.id);
     return { user: newUser, isNew: true };
   };
 
-  const loginWithGoogleProfile = (profile: GoogleUserProfile): User => {
-    const existing = users.find(
-      u => (profile.email && u.email.toLowerCase() === profile.email.toLowerCase()) || u.id === profile.id
-    );
-
-    if (existing) {
-      const updated: User = {
-        ...existing,
-        name: profile.name || existing.name,
-        avatar: profile.avatar || existing.avatar,
-      };
-      storage.saveUser(updated);
-      setUsers(prev => prev.map(u => u.id === existing.id ? updated : u));
-      setCurrentUserId(existing.id);
-      return updated;
-    }
-
-    const newUser: User = {
-      id: `google_${profile.id || Date.now()}`,
-      name: profile.name,
-      email: profile.email,
-      avatar: profile.avatar || `https://lh3.googleusercontent.com/a/default-user=s96-c`,
-      role: 'Personal Workspace',
-      plan: 'free',
-      onboarded: true,
-      createdAt: new Date().toISOString(),
-    };
-
-    storage.saveUser(newUser);
-    setUsers(prev => [...prev, newUser]);
-    setCurrentUserId(newUser.id);
-    return newUser;
-  };
-
-  const loginWithGoogle = async (): Promise<{ error: Error | null; user?: User }> => {
-    // 1. If Google Client ID is configured, use official Google Identity Services popup
-    if (googleAuth.isConfigured()) {
-      try {
-        const profile = await googleAuth.signInWithGooglePopup();
-        const user = loginWithGoogleProfile(profile);
-        return { error: null, user };
-      } catch (err: any) {
-        return { error: err instanceof Error ? err : new Error(String(err)) };
-      }
-    }
-
-    // 2. If Supabase is connected with an anon key, use Supabase OAuth redirect
-    if (isSupabaseConfigured()) {
-      const res = await signInWithGoogle();
-      return { error: res.error };
-    }
-
-    // 3. Neither is configured yet
-    return { 
-      error: new Error('GOOGLE_CONFIG_NEEDED') 
-    };
-  };
-
-  const loginWithDemoGoogle = (
-    customName?: string,
-    customEmail?: string
-  ): User => {
-    const email = (customEmail || 'user@gmail.com').trim();
-    const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existing) {
-      setCurrentUserId(existing.id);
-      return existing;
-    }
-
-    const derivedName = customName?.trim() || email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    const googleUser: User = {
-      id: `user_google_${Date.now()}`,
-      name: derivedName,
-      email,
-      avatar: `https://lh3.googleusercontent.com/a/default-user=s96-c`,
-      role: 'Personal Workspace',
-      plan: 'free',
-      onboarded: true,
-      createdAt: new Date().toISOString(),
-    };
-
-    storage.saveUser(googleUser);
-    setUsers(prev => [...prev, googleUser]);
-    setCurrentUserId(googleUser.id);
-    return googleUser;
+  const loginWithGoogle = async (): Promise<{ error: Error | null }> => {
+    return await signInWithGoogle();
   };
 
   const logoutUser = () => {
     signOutSupabase();
-    // Default to first user or keep existing
+    // Reset to default first persona
     setCurrentUserId(users[0]?.id || 'user_alex');
   };
 
@@ -279,14 +213,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         users,
         isAuthenticated: true,
         isSupabaseConnected: isSupabaseConfigured(),
-        isGoogleConfigured: googleAuth.isConfigured(),
         switchUser,
         registerUser,
         loginUser,
         loginOrCreateUser,
         loginWithGoogle,
-        loginWithGoogleProfile,
-        loginWithDemoGoogle,
         logoutUser,
         updateUserPlan,
         completeOnboarding,
