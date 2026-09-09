@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, PlanTier } from '../types';
 import { storage } from '../lib/storage';
 import { supabase, signInWithGoogle, signOutSupabase, isSupabaseConfigured } from '../lib/supabase';
@@ -24,18 +24,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [users, setUsers] = useState<User[]>(() => storage.getUsers());
   const [currentUserId, setCurrentUserId] = useState<string>(() => storage.getCurrentUserId());
   
-  // Resolve current active user; prioritize currentUserId, then any non-demo user, then users[0]
-  const currentUser = 
-    users.find(u => u.id === currentUserId) || 
-    users.find(u => !u.id.startsWith('user_alex')) || 
-    users[0];
+  // Resolve current active user; strictly follows currentUserId, falls back to users[0]
+  const currentUser = users.find(u => u.id === currentUserId) || users[0];
 
   useEffect(() => {
     storage.setCurrentUserId(currentUserId);
   }, [currentUserId]);
 
-  const handleSupabaseUser = (sbUser: any) => {
+  const handleSupabaseUser = useCallback((sbUser: any) => {
     if (!sbUser) return;
+    console.log('[Auth] Processing Authenticated Google/Supabase User:', sbUser);
 
     const meta = sbUser.user_metadata || {};
     const email = (sbUser.email || meta.email || '').trim();
@@ -65,9 +63,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       activeUser = { 
         ...allUsers[existingIndex], 
         id: sbUser.id, 
-        name: name || allUsers[existingIndex].name, 
-        avatar: avatar || allUsers[existingIndex].avatar, 
-        email: email || allUsers[existingIndex].email 
+        name, 
+        avatar, 
+        email 
       };
       allUsers[existingIndex] = activeUser;
     } else {
@@ -83,7 +81,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       // Place newly authenticated user at the front of the list
       allUsers.unshift(activeUser);
-      // Provision starter categories for this new Google workspace
       storage.getCategories(activeUser.id);
     }
 
@@ -102,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
-  };
+  }, []);
 
   // Listen to Supabase Auth state changes & OAuth redirect callbacks
   useEffect(() => {
@@ -118,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             handleSupabaseUser(data.session.user);
           }
           if (error) {
-            console.error('PKCE exchangeCodeForSession error:', error);
+            console.warn('[Auth] exchangeCodeForSession:', error.message);
           }
         });
       }
@@ -133,7 +130,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // 3. Listen for real-time auth events (SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user && (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION')) {
+      console.log('[Auth] onAuthStateChange event:', event, session?.user?.email);
+      if (session?.user) {
         handleSupabaseUser(session.user);
       }
     });
@@ -141,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription?.unsubscribe();
     };
-  }, []);
+  }, [handleSupabaseUser]);
 
   const switchUser = (userId: string) => {
     const found = users.find(u => u.id === userId);
@@ -242,7 +240,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logoutUser = () => {
     signOutSupabase();
-    // Default to first persona
     const firstId = users[0]?.id || 'user_alex';
     setCurrentUserId(firstId);
     storage.setCurrentUserId(firstId);

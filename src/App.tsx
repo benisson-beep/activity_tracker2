@@ -67,6 +67,25 @@ const MainAppContent: React.FC = () => {
     showToast('You have been logged out.');
   };
 
+  // Global OAuth URL listener for Google authentication errors & success
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const hash = window.location.hash;
+    const search = window.location.search;
+    const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : '');
+    const searchParams = new URLSearchParams(search);
+
+    const error = hashParams.get('error') || searchParams.get('error');
+    const errorDesc = hashParams.get('error_description') || searchParams.get('error_description');
+
+    if (error || errorDesc) {
+      console.error('[OAuth URL Error]', error, errorDesc);
+      showToast(`Google Sign-In Error: ${errorDesc || error}`, 'error');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [showToast]);
+
   // Global Keyboard Shortcuts (1-7 for tabs, N for new activity)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
